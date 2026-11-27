@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "template": {
+    "pptxFileName": "周边场地分析模板.pptx",
+    "expectedSlideCount": 10,
+    "preservePages": [
+      1
+    ],
+    "cadBaseline": {
+      "pptxFileName": "CAD页基准.pptx",
+      "pages": []
+    },
+    "redlinePages": [
+      9,
+      10
+    ],
+    "cadPageLayout": {
+      "9": {
+        "keepIds": [
+          2,
+          22,
+          49,
+          67
+        ],
+        "parcelStyleId": 19,
+        "frame": [
+          502,
+          229,
+          1689,
+          1270
+        ],
+        "reviewFields": [
+          "indicators"
+        ],
+        "indicatorTextStyleId": 26
+      },
+      "10": {
+        "keepIds": [
+          12,
+          22,
+          49,
+          67
+        ],
+        "parcelStyleId": 48,
+        "frame": [
+          502,
+          229,
+          1689,
+          1270
+        ],
+        "topicStyles": {
+          "低多层建筑后退控制线": {
+            "styleId": 50,
+            "legendIds": [
+              50,
+              51
+            ]
+          }
+        },
+        "reviewFields": [
+          "cadTopics"
+        ]
+      }
+    }
+  },
+  "canvas": {
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "figureRect": {
+      "x": 510,
+      "y": 365,
+      "width": 1664,
+      "height": 884
+    },
+    "cropAspectTolerance": 0.001
+  },
+  "layout": {
+    "fontFamily": "微软雅黑",
+    "section": {
+      "x": 65,
+      "y": 315,
+      "width": 410,
+      "height": 80,
+      "pt": 30,
+      "color": "E46C0A"
+    },
+    "body": {
+      "x": 65,
+      "y": 420,
+      "width": 405,
+      "height": 330,
+      "pt": 22,
+      "color": "373737"
+    },
+    "figureTitle": {
+      "x": 510,
+      "y": 285,
+      "width": 1670,
+      "height": 65,
+      "pt": 30,
+      "color": "373737"
+    },
+    "poiIndex": {
+      "x": 65,
+      "y": 780,
+      "width": 430,
+      "height": 480,
+      "pt": 18,
+      "color": "373737"
+    },
+    "planningStatus": {
+      "x": 65,
+      "y": 800,
+      "width": 410,
+      "height": 350,
+      "pt": 20,
+      "color": "373737"
+    },
+    "historicalImage": {
+      "x": 65,
+      "y": 790,
+      "width": 380,
+      "height": 249
+    },
+    "historicalCaption": {
+      "x": 65,
+      "y": 1050,
+      "width": 405,
+      "height": 100,
+      "pt": 18,
+      "color": "373737"
+    },
+    "caption": {
+      "x": 510,
+      "y": 1290,
+      "width": 1655,
+      "height": 110,
+      "pt": 22,
+      "color": "373737"
+    },
+    "attribution": {
+      "x": 510,
+      "y": 1485,
+      "width": 1610,
+      "height": 45,
+      "pt": 14,
+      "color": "666666"
+    },
+    "pageNumber": {
+      "x": 2140,
+      "y": 1520,
+      "width": 80,
+      "height": 45,
+      "pt": 20,
+      "color": "373737"
+    },
+    "legend": {
+      "x": 65,
+      "labelX": 110,
+      "yStart": 1200,
+      "step": 55,
+      "labelHeight": 50,
+      "labelOffsetY": -7,
+      "labelWidth": 350,
+      "labelPt": 18,
+      "lineOffsetY": 10,
+      "lineLength": 35,
+      "swatchWidth": 28,
+      "swatchHeight": 18,
+      "ringContrast": {
+        "x": 61,
+        "yOffset": -1,
+        "width": 44,
+        "height": 24,
+        "color": "777777"
+      },
+      "parcelLabel": "用地红线"
+    }
+  },
+  "compose": {
+    "pages": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "outputFileName": "周边场地分析.pptx",
+    "keepExistingTextContains": "项目分析",
+    "keepExistingTextMaxLength": 90,
+    "labelShift": [
+      0,
+      44,
+      -44,
+      88,
+      -88,
+      132,
+      -132
+    ],
+    "labelDefaultOffset": {
+      "dx": 12,
+      "dy": -26
+    },
+    "labelBoxDefault": "rgba(30,28,17,0.4)",
+    "projectMarker": {
+      "pages": [
+        2,
+        3,
+        7
+      ],
+      "sizePx": 14,
+      "objectName": "HTML:p0:project",
+      "label": "基地"
+    },
+    "legendLabels": {
+      "district": "行政区范围",
+      "ring": "估算车程圈",
+      "express": "区域高速线路",
+      "gov": "教育及医疗",
+      "shop": "商业及活动设施",
+      "road": "道路线路",
+      "green": "绿地",
+      "water": "水体",
+      "view": "候选观察视点"
+    },
+    "perPage": {
+      "2": {
+        "legendKeys": [
+          "district",
+          "ring"
+        ]
+      },
+      "3": {
+        "nameLabels": {
+          "source": "screen.city.expLabels",
+          "layer": "express",
+          "max": 5,
+          "minDistance": 110
+        }
+      },
+      "4": {
+        "poiIndex": true
+      },
+      "5": {
+        "nameLabels": {
+          "source": "screen.local.roadNames",
+          "layer": "road",
+          "max": 5,
+          "minDistance": 110
+        }
+      },
+      "6": {
+        "legendKeys": [
+          "green",
+          "water"
+        ]
+      },
+      "7": {
+        "legendKeys": []
+      },
+      "8": {
+        "legendKeys": [
+          "view"
+        ]
+      }
+    }
+  },
+  "acceptance": {
+    "pages": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "screenshot": {
+      "width": 1280,
+      "height": 720,
+      "minBytes": 20000
+    },
+    "requireFeatureSourcePrefix": "HTML/",
+    "minNativeTextBoxes": 5,
+    "allowedRadii": [
+      500,
+      1000,
+      2000
+    ],
+    "cropAspectTolerance": 0.001,
+    "reportFileName": "验收结果.json"
+  }
+}

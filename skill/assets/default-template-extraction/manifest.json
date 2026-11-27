@@ -1,0 +1,10 @@
+{
+  "template_sha256": "0a0bc682bfc9c29c674c827f83463e0dc72132f0150141b40b55940afc8b68b5",
+  "slide_count": 10,
+  "semantic_review_required": true,
+  "original": "../周边场地分析模板.pptx",
+  "binding_review": {
+    "referenced_objects": 42,
+    "result": "all referenced objects identical to prior extraction; bindings retained"
+  }
+}

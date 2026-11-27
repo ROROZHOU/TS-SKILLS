@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RollForward>LatestMajor</RollForward>
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../ArtifactReceipt.cs" />
+    <Compile Include="../CaptureSpec.cs" />
+    <PackageReference Include="ACadSharp" Version="3.8.35" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.56.0" />
+    <PackageReference Include="NJsonSchema" Version="11.5.2" />
+    <EmbeddedResource Include="../../../assets/webapp/*.js;../../../assets/webapp/*.html;../../../assets/webapp/site.config.schema.json" LogicalName="%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
+

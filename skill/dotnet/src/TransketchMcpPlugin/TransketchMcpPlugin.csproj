@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TransketchMcpPlugin</RootNamespace>
+    <AssemblyName>TransketchMcpPlugin</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <PackageId>TransketchMcpPlugin</PackageId>
+    <Version>0.9.5</Version>
+    <Authors>daiyaohui</Authors>
+    <Description>TransketchMcp 外部业务插件：自包含 MCP 工具、模型与 JSON 上下文，供主程序通过 NuGet 包和 WithTools 注册。</Description>
+    <PackageTags>mcp;cad;transketchmcp;plugin</PackageTags>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\..\artifacts\nuget</PackageOutputPath>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../ArtifactReceipt.cs" />
+    <Compile Include="../CaptureSpec.cs" />
+    <PackageReference Include="ModelContextProtocol" Version="2.3.1" />
+  </ItemGroup>
+
+  <Target Name="EnsureReleasePack" BeforeTargets="Pack" Condition="'$(Configuration)' != 'Release'">
+    <Error Text="TransketchMcpPlugin 只允许在 Release 配置下打包。" />
+  </Target>
+</Project>
+

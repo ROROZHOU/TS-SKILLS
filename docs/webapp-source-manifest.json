@@ -1,0 +1,28 @@
+{
+  "version": "0.9.5",
+  "archive": "site-context-ppt-0.9.5.zip",
+  "directory": "site-context-ppt/assets/webapp/",
+  "upstreamVersion": "v25_20261113_临时目录统一释放",
+  "files": [
+    {
+      "file": "ppt-adapter.js",
+      "sha256": "cb054da048202ce03954bebf985f52d5405d261bc36e03b320e3210d226e05ed"
+    },
+    {
+      "file": "site_builder.js",
+      "sha256": "451f01e5dcec28730e85b9ee2c10ed12bcd3c302a4766848c2dbe1a6f1b11412"
+    },
+    {
+      "file": "site.config.json",
+      "sha256": "bd6f4745d88ca680f8ccd71ca515604b810f2523ea896a9d765eb7cc5f0c2a76"
+    },
+    {
+      "file": "site.config.schema.json",
+      "sha256": "9f02c1cdc96630a60491dea61bbc795ee511f253910852cb797e375635e7e567"
+    },
+    {
+      "file": "周边场地分析_模板.html",
+      "sha256": "67c93c209da789529074754942ac1b437aa5eafffb11b5f4ccdf28e2830abce5"
+    }
+  ]
+}

@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>周边场地分析</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+  /* 底图容器：黑白滤镜只作用在它内部的瓦片/三维楼块上 */
+  #map { position: absolute; inset: 0; z-index: 0; background: #0b1220; }
+  #map.gray canvas, #map.gray img {
+    filter: grayscale(1) contrast(1.05) brightness(1.04);
+  }
+  /* 要素层：独立画布，位于底图之上、面板之下，不参与黑白滤镜 */
+  #ov { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+
+  .card {
+    position: absolute; z-index: 30;
+    background: rgba(11,17,29,0.90);
+    color: #e8eef8;
+    border: 1px solid rgba(148,163,184,0.22);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.38);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* ---------- 左上主面板 ---------- */
+  /* 顶到左上角留出开关按钮的位置；面板比屏幕高时自己滚动 */
+  #panel { left: 16px; top: 56px; width: 252px; padding: 14px 15px 12px;
+    max-height: calc(100% - 72px); overflow-y: auto; scrollbar-width: thin; }
+  /* ---------- 左上角：侧栏 / 图例 开关 ---------- */
+  #ui-toggle { left: 16px; top: 16px; width: 34px; height: 30px; padding: 0;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    z-index: 40; font-size: 15px; line-height: 1; color: #cbd7e6; user-select: none;
+    border-radius: 9px; }
+  #ui-toggle:hover { border-color: rgba(96,165,250,0.65); color: #fff; }
+  #ui-toggle.off { opacity: .72; }
+  body.ui-off #panel, body.ui-off #legend { display: none; }
+  #panel h1 { margin: 0; font-size: 14.5px; font-weight: 600; letter-spacing: .3px; }
+  #panel .addr { margin-top: 3px; font-size: 11px; color: #93a4bd; }
+  #panel .coord { margin-top: 6px; font-size: 10px; color: #7c8ba4; line-height: 1.65;
+    font-variant-numeric: tabular-nums; }
+  #panel .coord b { color: #b9c8dd; font-weight: 500; }
+
+  .sect { margin-top: 11px; border-top: 1px solid rgba(148,163,184,0.15); padding-top: 9px; }
+  .sect-t { font-size: 10px; color: #7c8ba4; letter-spacing: 1px; margin-bottom: 6px; }
+
+  .row2 { display: flex; gap: 5px; flex-wrap: wrap; }
+  .btn { flex: 1 1 0; min-width: 0; padding: 5px 0; text-align: center; font-size: 11px; cursor: pointer;
+    border-radius: 6px; border: 1px solid rgba(148,163,184,0.28); color: #9fb0c7;
+    background: transparent; transition: .15s; user-select: none; }
+  .btn:hover { border-color: rgba(96,165,250,0.6); color: #cfe0f5; }
+  .btn.on { background: rgba(37,99,235,0.30); border-color: #3b82f6; color: #dbeafe; }
+  /* 视野 5 档必须挤在同一行：等分 + 收一点字号和字距 */
+  #panel .row2.fit .btn { flex: 1 1 0; padding: 5px 0; font-size: 10px; letter-spacing: -.3px; }
+
+  /* 图层面板的分组标题（地块级 / 城市级 / 特殊图层） */
+  .grp { font-size: 9.5px; color: #6b7a90; letter-spacing: .8px; margin: 7px 2px 2px;
+    display: flex; align-items: baseline; gap: 5px; }
+  .grp:first-child { margin-top: 0; }
+  .grp span { font-size: 9px; color: #55637a; letter-spacing: 0; }
+  .grp.hide { display: none; }
+
+  .sw { display: flex; align-items: center; gap: 8px; padding: 4px 5px; border-radius: 6px;
+    font-size: 11.5px; cursor: pointer; user-select: none; transition: background .15s; }
+  .sw:hover { background: rgba(148,163,184,0.12); }
+  .sw .dot { width: 9px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
+  .sw .dot.pt { border-radius: 50%; }
+  .sw .dot.ln { height: 0; border-top: 3px solid; border-radius: 0; width: 12px; }
+  .sw .nm { flex: 1; }
+  .sw .ct { font-size: 10px; color: #76869e; font-variant-numeric: tabular-nums; }
+  .sw .tg { width: 25px; height: 14px; border-radius: 8px; background: #334155; position: relative;
+    flex: 0 0 auto; transition: background .18s; }
+  .sw .tg::after { content: ''; position: absolute; left: 2px; top: 2px; width: 10px; height: 10px;
+    border-radius: 50%; background: #94a3b8; transition: .18s; }
+  .sw.on .tg { background: #2563eb; }
+  .sw.on .tg::after { left: 13px; background: #fff; }
+  .sw.off { opacity: .55; }
+
+  .tip { margin-top: 7px; font-size: 10px; color: #8fa1b9; line-height: 1.6;
+    background: rgba(148,163,184,0.10); border-radius: 6px; padding: 5px 7px; display: none; }
+  .tip b { color: #93c5fd; font-weight: 500; cursor: pointer; }
+  .tip b:hover { text-decoration: underline; }
+
+  /* ---------- 图例 ---------- */
+  #legend { right: 16px; bottom: 46px; padding: 10px 13px 9px; font-size: 11.5px; }
+  #legend .lt { font-size: 10px; color: #7c8ba4; letter-spacing: 1px; margin-bottom: 6px; }
+  #legend .r { display: flex; align-items: center; gap: 9px; padding: 2.5px 0; color: #cbd7e6; }
+  #legend .mk { width: 17px; height: 11px; border-radius: 2px; flex: 0 0 auto; }
+  #legend .mk.pt { width: 9px; height: 9px; border-radius: 50%; margin: 0 4px; }
+  #legend .mk.ln { height: 0; border-radius: 0; }
+  #legend .r.hide { display: none; }
+
+  /* ---------- 四周实景照片：贴在视口外侧（上北 / 右东 / 下南 / 左西） ---------- */
+  body.capture-basemap > :not(#map), body.capture-basemap > :not(#map) * { visibility: hidden !important; }
+  #views { position: absolute; inset: 0; z-index: 25; pointer-events: none; }
+  #views .vp { position: absolute; width: 152px; pointer-events: auto;
+    display: block; text-decoration: none; color: inherit;
+    border-radius: 8px; overflow: hidden; background: rgba(11,17,29,0.92);
+    border: 1px solid rgba(148,163,184,0.28); cursor: pointer;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+    transition: border-color .15s, box-shadow .15s; }
+  #views .vp:hover { border-color: rgba(245,158,11,0.8); }
+  #views .vp.act { border-color: #f59e0b;
+    box-shadow: 0 0 0 1px rgba(245,158,11,0.6), 0 8px 22px rgba(0,0,0,0.45); }
+  #views .vp[data-d="0"] { top: 14px; left: 50%; transform: translateX(-50%); }
+  #views .vp[data-d="1"] { right: 14px; top: 50%; transform: translateY(-50%); }
+  #views .vp[data-d="2"] { bottom: 14px; left: 50%; transform: translateX(-50%); }
+  #views .vp[data-d="3"] { left: 284px; top: 50%; transform: translateY(-50%); }
+  body.ui-off #views .vp[data-d="3"] { left: 62px; }
+  body.ui-off #views { display: none; }
+  #views img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+    background: #1b2537; -webkit-user-drag: none; user-select: none; }
+  #views .num { position: absolute; left: 5px; top: 5px; width: 17px; height: 17px;
+    border-radius: 50%; background: #f59e0b; color: #3b1d00; font-size: 10.5px;
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 1.5px rgba(255,255,255,.85); }
+  #views .cap { padding: 3px 6px 4px; font-size: 10px; color: #cbd7e6; line-height: 1.4;
+    display: flex; align-items: center; gap: 4px; }
+  #views .cap b { color: #fbbf24; font-weight: 600; flex: 0 0 auto; }
+  #views .cap i { font-style: normal; flex: 1 1 auto; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; }
+  #views .cap .go { flex: 0 0 auto; color: #7c8ba4; font-size: 9.5px; letter-spacing: -.2px; }
+  #views .vp:hover .cap .go { color: #93c5fd; }
+  /* --- 坐标输入 --- */
+  .sect-sub { font-weight: 400; color: #7b8798; font-size: 10px; margin-left: 4px; }
+  .loc { display: flex; gap: 5px; align-items: center; }
+  .loc input {
+    flex: 1 1 0; min-width: 0; width: 0;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 6px; color: #e8eef8; font-size: 11.5px; padding: 6px 7px;
+    font-variant-numeric: tabular-nums; outline: none;
+  }
+  .loc input:focus { border-color: #38bdf8; background: rgba(56,189,248,0.10); }
+  .loc input::placeholder { color: #5d6a7c; }
+  .loc .go {
+    flex: 0 0 auto; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    background: #2563eb; color: #fff; font-size: 11.5px; font-weight: 600;
+    border: 1px solid #3b82f6; user-select: none;
+  }
+  .loc .go:hover { background: #1d4ed8; }
+  .loc .go.busy { background: #334155; border-color: #475569; cursor: default; }
+  .loc-tip { margin-top: 5px; font-size: 10.5px; color: #7b8798; line-height: 1.4; }
+  .loc-tip.err { color: #fca5a5; }
+  .loc-tip.ok { color: #6ee7b7; }
+  #layers .sw.hide { display: none; }
+
+  /* ---------- 提示 ---------- */
+  #hint { left: 50%; transform: translateX(-50%); bottom: 18px; padding: 7px 14px;
+    font-size: 11.5px; color: #fde68a; border-color: rgba(253,230,138,0.32); display: none;
+    max-width: 60%; text-align: center; }
+
+  /* ---------- 载入遮罩 ---------- */
+  #loading { position: fixed; inset: 0; z-index: 9999; display: flex;
+    align-items: center; justify-content: center; flex-direction: column; gap: 15px;
+    background: rgba(8,12,20,0.74); -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px); color: #e8eef8; font-size: 13px; letter-spacing: 0.2px; }
+  #loading.hide { display: none; }
+  #loading .spin { width: 36px; height: 36px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.16); border-top-color: #38bdf8;
+    animation: lspin 0.85s linear infinite; }
+  @keyframes lspin { to { transform: rotate(360deg); } }
+  #loading .lmain { font-weight: 600; }
+  #loading .lsub { font-size: 11px; color: #93a4bd; max-width: 70vw; text-align: center; }
+
+  #setup { position: absolute; inset: 0; z-index: 60; display: none;
+    align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 40%, #16233b 0%, #080d17 75%); }
+  #setup .box { width: 500px; max-width: calc(100% - 40px); padding: 26px 28px;
+    background: rgba(13,20,34,0.94); border: 1px solid rgba(148,163,184,0.25);
+    border-radius: 14px; color: #e8eef8; }
+  #setup h2 { margin: 0 0 6px; font-size: 16px; }
+  #setup .sub { font-size: 12px; color: #93a4bd; line-height: 1.9; }
+  #setup code { background: rgba(96,165,250,0.14); color: #93c5fd; padding: 1px 5px;
+    border-radius: 4px; font-size: 11.5px; }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div id="loading" class="hide">
+  <div class="spin"></div>
+  <div class="lmain" id="loading-main">正在读取…</div>
+  <div class="lsub" id="loading-sub"></div>
+</div>
+<canvas id="ov"></canvas>
+
+<div id="ui-toggle" class="card" role="button" title="隐藏侧栏与图例"
+     aria-label="显示或隐藏侧栏与图例">☰</div>
+
+<div id="panel" class="card">
+  <h1 id="title">周边场地分析</h1>
+  <div class="addr" id="addr">—</div>
+  <div class="coord" id="coord"></div>
+
+  <div class="sect">
+    <div class="sect-t">场地坐标 <span class="sect-sub">GCJ-02 · 任意地点</span></div>
+    <div class="loc">
+      <input id="in-lng" type="text" inputmode="decimal" placeholder="经度">
+      <input id="in-lat" type="text" inputmode="decimal" placeholder="纬度">
+      <div class="btn go" id="btn-go">定位</div>
+    </div>
+    <div class="loc-tip" id="loc-tip">输入经纬度后回车，或点「定位」重建分析</div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-t">底图</div>
+    <div class="row2">
+      <div class="btn on" data-bm="satellite">卫星影像</div>
+      <div class="btn" data-bm="vector">矢量地图</div>
+    </div>
+    <div class="sw on" id="gray-sw" style="margin-top:5px">
+      <span class="dot" style="background:linear-gradient(90deg,#fff 50%,#5b6b82 50%)"></span>
+      <span class="nm">黑白影像</span><span class="tg"></span>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-t">图层</div>
+    <div id="layers">
+      <div class="grp grp-near">地块级 <span>2 km 及以下</span></div>
+      <div class="sw on grp-near" data-k="green">
+        <span class="dot" style="background:rgba(74,222,128,0.85)"></span>
+        <span class="nm">绿地</span><span class="ct" id="ct-green">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-near" data-k="water">
+        <span class="dot" style="background:rgba(56,132,255,0.85)"></span>
+        <span class="nm">水系</span><span class="ct" id="ct-water">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-near" data-k="road">
+        <span class="dot" style="background:#8a5327"></span>
+        <span class="nm">道路</span><span class="ct" id="ct-road">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-near" data-k="metro">
+        <span class="dot pt" style="background:#2563eb"></span>
+        <span class="nm">地铁站</span><span class="ct" id="ct-metro">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-near" data-k="bus">
+        <span class="dot pt" style="background:#f59e0b"></span>
+        <span class="nm">公交车站</span><span class="ct" id="ct-bus">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-near" data-k="shop">
+        <span class="dot" style="background:#ec4899"></span>
+        <span class="nm">商业</span><span class="ct" id="ct-shop">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-near" data-k="gov">
+        <span class="dot" style="background:#6366f1"></span>
+        <span class="nm">行政</span><span class="ct" id="ct-gov">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-near" data-k="sport">
+        <span class="dot" style="background:#ef4444"></span>
+        <span class="nm">体育</span><span class="ct" id="ct-sport">–</span><span class="tg"></span>
+      </div>
+
+      <div class="grp grp-city">城市级 <span>5 km 及以上</span></div>
+      <div class="sw on grp-city" data-k="district">
+        <span class="dot" style="background:rgba(249,153,60,0.55);box-shadow:inset 0 0 0 1.5px #fff"></span>
+        <span class="nm">所在区县</span><span class="ct" id="ct-dist">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-city" data-k="express">
+        <span class="dot ln" style="border-color:#ffb020"></span>
+        <span class="nm">高速公路</span><span class="ct" id="ct-exp">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-city" data-k="rail">
+        <span class="dot pt" style="background:#8b5cf6"></span>
+        <span class="nm">高铁站</span><span class="ct" id="ct-rail">–</span><span class="tg"></span>
+      </div>
+      <div class="sw on grp-city" data-k="air">
+        <span class="dot pt" style="background:#0891b2"></span>
+        <span class="nm">机场</span><span class="ct" id="ct-air">–</span><span class="tg"></span>
+      </div>
+
+      <div class="sw on" data-k="ring">
+        <span class="dot ln" style="border-color:#ef4444;border-top-style:dashed"></span>
+        <span class="nm">交通分析圈</span><span class="tg"></span>
+      </div>
+      <div class="sw on" data-k="view">
+        <span class="dot" style="background:rgba(245,158,11,0.9)"></span>
+        <span class="nm">实景视点</span><span class="ct" id="ct-view">–</span><span class="tg"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-t">视野</div>
+    <div class="row2 fit">
+      <div class="btn on" data-fit="500">500 m</div>
+      <div class="btn" data-fit="2000">2 km</div>
+      <div class="btn" data-fit="5000">5 km</div>
+      <div class="btn" data-fit="15000">15 km</div>
+      <div class="btn" data-fit="30000">30 km</div>
+    </div>
+  </div>
+</div>
+
+<div id="legend" class="card">
+  <div class="lt">图 例</div>
+  <div class="r lg-near"><span class="mk" data-k="green" data-role="fill"></span><span class="mk pt" data-k="park" data-role="fill" style="margin-left:-3px"></span>绿地</div>
+  <div class="r lg-near"><span class="mk" data-k="water" data-role="fill"></span>水系</div>
+  <div class="r lg-near"><span class="mk" data-k="road" data-role="stroke"></span>道路</div>
+  <div class="r lg-near"><span class="mk pt" data-k="metro" data-role="fill"></span>地铁站</div>
+  <div class="r lg-near"><span class="mk pt" data-k="bus" data-role="fill"></span>公交车站</div>
+  <div class="r lg-near"><span class="mk" data-k="shop" data-role="fill"></span>商业</div>
+  <div class="r lg-near"><span class="mk" data-k="gov" data-role="fill"></span>行政</div>
+  <div class="r lg-near"><span class="mk" data-k="sport" data-role="fill"></span>体育</div>
+  <div class="r lg-near lg-view"><span class="mk" data-k="view" data-role="fill"></span>实景视点</div>
+
+  <div class="r lg-city"><span class="mk" data-k="district" data-role="fill" style="box-shadow:inset 0 0 0 1.5px #fff"></span>所在区县</div>
+  <div class="r lg-city"><span class="mk ln" data-k="express" data-role="line"></span>高速公路</div>
+  <div class="r lg-city"><span class="mk pt" data-k="rail" data-role="fill"></span>高铁站</div>
+  <div class="r lg-city"><span class="mk pt" data-k="air" data-role="fill"></span>机场</div>
+</div>
+
+<div id="hint" class="card"></div>
+
+<div id="views"></div>
+
+<div id="setup">
+  <div class="box">
+    <h2>还差一步：填写高德 Key</h2>
+    <div class="sub">
+      请在宿主中配置同一应用的高德 Web 端 Key 和安全密钥，再重新采集。
+    </div>
+  </div>
+</div>
+
+<script src="/amap.runtime.js"></script>
+<!-- SITE_CONFIG -->
+<script src="site_builder.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var CFG = window.AMAP_CONFIG || {};
+  /* 离线快照已停用：默认坐标（德邻公寓）和其它坐标一样，走 SiteBuilder 实时构建。
+     这里留一个空壳，首帧绘制时数据还没到，draw() 里读 L.xxx 不至于炸。 */
+  var EMPTY_L = { roadLines: [], green: [], water: [], waterWays: [], bus: [], metro: [],
+                  amenities: { shop: [], gov: [], sport: [], park: [] },
+                  waterNames: [], greenPois: [], roadNames: [] };
+  var L = EMPTY_L;
+  var $ = function (id) { return document.getElementById(id); };
+
+  if (!CFG.key) { $('setup').style.display = 'flex'; return; }
+
+  /* ================= 样式配置 =================
+     所有可调项都在 site.config.json（生成时嵌入页面）。
+     下面这份是"缺省值"：配置里没写的项落在这里，所以 JSON 可以只写想改的几项。
+     数据结构一一对应，改 JSON 就是改这里。 */
+  var DEF_LAYERS = {
+    /* 地块级（≤2 km） */
+    green: { on: true, style: 'polygon',
+             fill: { color: '#40d674', opacity: 0.50 },
+             stroke: { color: '#40d674', opacity: 0, width: 0, dash: 'solid' },
+             label: { show: true, color: '#c9ffe9', size: 10.5 } },
+    water: { on: true, style: 'polygon',
+             fill: { color: '#2c7af2', opacity: 0.55 },
+             stroke: { color: '#2c7af2', opacity: 0, width: 0, dash: 'solid' },
+             /* 河道（waterway 线）跟水面共用一个图层：颜色默认继承 fill，
+                宽度是"没有 OSM width 标签时按等级给的默认河宽（米）" */
+             way: { on: true, opacity: 0.55,
+                    widthM: { river: 30, canal: 18, stream: 8, ditch: 4, drain: 3 },
+                    /* 从 waterway 的 name 字段读取河名；关闭 show 可隐藏标注，缺省颜色和字号继承水面标注。 */
+                    label: { show: true, size: 11 } },
+             label: { show: true, color: '#eaf3ff', size: 13 } },
+    road: { on: true, style: 'line', width: [4.6, 2.8, 1.6],
+            stroke: { color: '#9e5c28', opacity: 0.72, dash: 'solid' },
+            label: { show: true, color: 'rgba(255,232,205,0.95)', size: 10.5 } },
+    metro: { on: true, style: 'point', size: 10.4,
+             fill: { color: '#2563eb', opacity: 1 },
+             stroke: { color: '#ffffff', opacity: 0.95, width: 2, dash: 'solid' },
+             label: { show: true, color: 'rgba(190,214,255,0.95)', size: 9.5 } },
+    bus: { on: true, style: 'point', size: 7.2,
+           fill: { color: '#f59e0b', opacity: 1 },
+           stroke: { color: '#ffffff', opacity: 0.9, width: 1.2, dash: 'solid' },
+           label: { show: false, color: '#ffd9a8', size: 9.5 } },
+    shop: { on: true, style: 'point', size: 5,
+            fill: { color: '#ec4899', opacity: 1 },
+            stroke: { color: '#ffffff', opacity: 0.9, width: 1.2, dash: 'solid' },
+            label: { show: true, color: '#ffd3e8', size: 10 } },
+    gov: { on: true, style: 'point', size: 5,
+           fill: { color: '#6366f1', opacity: 1 },
+           stroke: { color: '#ffffff', opacity: 0.9, width: 1.2, dash: 'solid' },
+           label: { show: true, color: '#d7d9ff', size: 9.5 } },
+    sport: { on: true, style: 'point', size: 5,
+             fill: { color: '#ef4444', opacity: 1 },
+             stroke: { color: '#ffffff', opacity: 0.9, width: 1.2, dash: 'solid' },
+             label: { show: true, color: '#ffd0d0', size: 9.5 } },
+    park: { on: true, style: 'point', size: 5,
+            fill: { color: '#10b981', opacity: 1 },
+            stroke: { color: '#ffffff', opacity: 0.9, width: 1.2, dash: 'solid' },
+            label: { show: true, color: '#c9ffe9', size: 9.5 } },
+    /* 城市级（≥5 km） */
+    district: { on: true, style: 'polygon',
+                fill: { color: '#ffa032', opacity: 0.15 },
+                stroke: { color: '#ffffff', opacity: 0.95, width: 3.4, dash: 'solid' },
+                label: { show: true, color: '#fff8ee', size: 16 } },
+    express: { on: true, style: 'line', width: 3.4,
+               fill: { color: '#ffa820', opacity: 0.92 },
+               stroke: { color: '#78350f', opacity: 0.75, width: 3.4, dash: 'solid' },
+               core: { color: '#ffb020', opacity: 1, width: 2.2 },
+               label: { show: true, color: '#ffe7bd', size: 10.5 } },
+    rail: { on: true, style: 'point', size: 10.8,
+            fill: { color: '#8b5cf6', opacity: 1 },
+            stroke: { color: '#ffffff', opacity: 0.95, width: 2, dash: 'solid' },
+            label: { show: true, color: '#e9dcff', size: 11.5 } },
+    air: { on: true, style: 'point', size: 12.8,
+           fill: { color: '#0891b2', opacity: 1 },
+           stroke: { color: '#ffffff', opacity: 0.95, width: 2, dash: 'solid' },
+           label: { show: true, color: '#c9f2ff', size: 12.5 } },
+    /* 纯文字 */
+    cityName: { on: true, style: 'text',
+                label: { show: true, color: 'rgba(255,255,255,0.94)', size: 20 } },
+    waterName: { on: true, style: 'text',
+                 label: { show: true, color: '#eaf3ff', size: 13 } },
+    /* 特殊图层 */
+    ring: { on: true, style: 'line', width: 3.4,
+            stroke: { color: '#ef4444', opacity: 0.95, width: 3.4, dash: [10, 6] },
+            label: { show: true, color: '#ffd7d7', size: 11 } },
+    project: { on: true, style: 'point', size: 12,
+               fill: { color: '#ef4444', opacity: 1 },
+               stroke: { color: '#ffffff', opacity: 1, width: 2.4, dash: 'solid' },
+               label: { show: true, text: '项目基地', color: '#ffffff', size: 13,
+                        box: 'rgba(220,38,38,0.95)' } },
+    /* 实景视点：地面上那个"视口示意角"（扇面 + 两条边 + 编号圆点） */
+    view: { on: true, style: 'polygon',
+            fill: { color: '#f59e0b', opacity: 0.26 },
+            stroke: { color: '#f59e0b', opacity: 0.95, width: 2.4, dash: 'solid' },
+            label: { show: true, color: '#ffd9a8', size: 10 } }
+  };
+  var DEF_CFG = {
+    basemap: { type: 'satellite', gray: true },
+    view: { initial: 500, options: [500, 2000, 5000, 15000, 30000] },
+    /* ui.show=false：打开就是纯净地图，左上角按钮仍可临时调出侧栏和图例 */
+    ui: { show: true },
+    /* 实景视点：自动在正东南西北各挑一条最近的横街，站在路上朝外看。
+       radius 搜索半径(米) / spread 与正方向的容许夹角(度) /
+       halfAngle 视口半角(度) / coneLen 示意角长度(米，会按屏幕再夹一次) /
+       captions 四条的手写说明（留空自动用"方向 · 路名"） */
+    views: { on: true, radius: 340, spread: 45, halfAngle: 24, coneLen: 90,
+             captions: ['', '', '', ''] },
+    layers: DEF_LAYERS
+  };
+  /* 深合并：JSON 里只写要改的项，其余落到缺省值 */
+  var CFG2 = (function () {
+    var src = window.SITE_CONFIG || {};
+    function merge(a, b) {
+      var o = {}, k;
+      for (k in a) o[k] = a[k];
+      for (k in b) {
+        if (!Object.prototype.hasOwnProperty.call(b, k)) continue;
+        if (b[k] && typeof b[k] === 'object' && !(b[k] instanceof Array) &&
+            a[k] && typeof a[k] === 'object' && !(a[k] instanceof Array)) {
+          o[k] = merge(a[k], b[k]);
+        } else {
+          o[k] = b[k];
+        }
+      }
+      return o;
+    }
+    var m = merge(DEF_CFG, src);
+    /* 优先使用项目配置中的坐标。 */
+    m.project = src.project || CFG.site || {};
+    return m;
+  })();
+
+  function layerCfg(k) {
+    return (CFG2.layers && CFG2.layers[k]) || DEF_LAYERS[k] || {};
+  }
+  /* '#22c55e' + 0.5 → 'rgba(34,197,94,0.5)'；已经是 rgba() 的原样返回 */
+  function rgbaOf(c, a) {
+    if (!c) return 'rgba(0,0,0,0)';
+    if (a === undefined || a === null) a = 1;
+    if (c.charAt(0) !== '#') return c;
+    var h = c.slice(1);
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    if (!isFinite(n)) return c;
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+  function dashOf(d) {
+    if (d === 'dashed') return [10, 6];
+    if (d === 'dotted') return [2, 4];
+    if (d instanceof Array) return d;
+    if (typeof d === 'string' && d.indexOf(',') > 0) {
+      return d.split(',').map(function (x) { return Number(x) || 0; });
+    }
+    return [];
+  }
+  function strokeOn(k) {
+    var st = layerCfg(k).stroke || {};
+    return (st.opacity === undefined ? 1 : st.opacity) > 0 && (st.width || 0) > 0;
+  }
+
+  /* ================= 坐标 ================= */
+  function outOfChina(lng, lat) {
+    return !(lng > 73.66 && lng < 135.05 && lat > 3.86 && lat < 53.55);
+  }
+  function tLat(x, y) {
+    var r = -100 + 2 * x + 3 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    r += (20 * Math.sin(6 * x * Math.PI) + 20 * Math.sin(2 * x * Math.PI)) * 2 / 3;
+    r += (20 * Math.sin(y * Math.PI) + 40 * Math.sin(y / 3 * Math.PI)) * 2 / 3;
+    r += (160 * Math.sin(y / 12 * Math.PI) + 320 * Math.sin(y * Math.PI / 30)) * 2 / 3;
+    return r;
+  }
+  function tLng(x, y) {
+    var r = 300 + x + 2 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    r += (20 * Math.sin(6 * x * Math.PI) + 20 * Math.sin(2 * x * Math.PI)) * 2 / 3;
+    r += (20 * Math.sin(x * Math.PI) + 40 * Math.sin(x / 3 * Math.PI)) * 2 / 3;
+    r += (150 * Math.sin(x / 12 * Math.PI) + 300 * Math.sin(x / 30 * Math.PI)) * 2 / 3;
+    return r;
+  }
+  function wgs2gcj(lng, lat) {
+    if (outOfChina(lng, lat)) return [lng, lat];
+    var a = 6378245.0, ee = 0.00669342162296594323;
+    var dLat = tLat(lng - 105, lat - 35), dLng = tLng(lng - 105, lat - 35);
+    var rad = lat / 180 * Math.PI, m = 1 - ee * Math.sin(rad) * Math.sin(rad), sq = Math.sqrt(m);
+    dLat = (dLat * 180) / ((a * (1 - ee)) / (m * sq) * Math.PI);
+    dLng = (dLng * 180) / (a / sq * Math.cos(rad) * Math.PI);
+    return [lng + dLng, lat + dLat];
+  }
+
+  var S = CFG2.project || CFG.site || {};
+  var SITE = (function () {
+    var c = (S.coord || 'WGS84').toUpperCase();
+    var p = (c === 'GCJ02' || c === 'GCJ-02') ? [S.lng, S.lat] : wgs2gcj(S.lng, S.lat);
+    return { lng: p[0], lat: p[1], wgs: [S.lng, S.lat], name: S.name, address: S.address };
+  })();
+  /* 配置文件没加载上时别让地图用 NaN 打转 */
+  if (!isFinite(SITE.lng) || !isFinite(SITE.lat)) {
+    $('setup').style.display = 'flex';
+    return;
+  }
+
+  /* ================= 量算工具 ================= */
+  function havM(a, b) {
+    var R = 6371008.8, r = Math.PI / 180;
+    var dLat = (b[1] - a[1]) * r, dLng = (b[0] - a[0]) * r;
+    var s = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(a[1] * r) * Math.cos(b[1] * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
+  }
+
+  /* ================= 分析圈 ================= */
+  /* 半径圈全部画出，但「视野」只提供 500m / 2km / 5km / 15km / 30km 五档 */
+  var RINGS = [
+    { r: 500,    t: '500 m' },
+    { r: 1000,   t: '1 km' },
+    { r: 2000,   t: '2 km' },
+    { r: 3000,   t: '3 km' },
+    { r: 5000,   t: '5 km' },
+    { r: 15000,  t: '15 km · 30 min 车程' },
+    { r: 30000,  t: '30 km · 1 h 车程' }
+  ];
+
+  /* 视野分档（按当前 zoom 判断该画哪一层） */
+  /* 地块级 / 城市级的分界。2 km 视野 z≈14.5、5 km 视野 z≈13.2，
+     分界只能落在这中间 —— 原来上下界卡在 14.2 / 14.8，2 km 档正好掉进缝里，
+     两层都不画，整个画面只剩分析圈。 */
+  var Z_SPLIT = 14.0;   /* ≥ 此级别 = 地块级（500 m / 2 km）；< 此级别 = 城市级（5 / 15 / 30 km） */
+  var Z_ROADNM = 16.3;  /* ≥ 此级别（仅 500m 视野）才标周边道路名 */
+
+  /* ================= 地图初始化 ================= */
+  var map, satellite, vector;
+  var ov, ctx, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var rc = null, rctx = null;   /* 道路离屏图层 */
+
+  window._AMapSecurityConfig = { securityJsCode: CFG.securityJsCode || '' };
+  var sc = document.createElement('script');
+  sc.src = 'https://webapi.amap.com/maps?v=2.0&key=' + encodeURIComponent(CFG.key) + '&plugin=AMap.Scale';
+  sc.onload = function () { try { init(); } catch (e) { fatal(e.message); } };
+  sc.onerror = function () { fatal('高德 JS API 加载失败：请检查 key 与网络（webapi.amap.com）。'); };
+  document.head.appendChild(sc);
+
+  function fatal(msg) { window.__buildErr = msg; showHint(msg, 0); }
+
+  var hintTimer;
+  function showHint(text, ms) {
+    var el = $('hint');
+    el.textContent = text;
+    el.style.display = 'block';
+    clearTimeout(hintTimer);
+    if (ms !== 0) hintTimer = setTimeout(function () { el.style.display = 'none'; }, ms || 4000);
+  }
+
+  function init() {
+    $('addr').textContent = SITE.address || '';
+    $('coord').innerHTML =
+      'WGS84&nbsp;<b>' + SITE.wgs[0].toFixed(6) + ', ' + SITE.wgs[1].toFixed(6) + '</b><br>' +
+      'GCJ-02 <b>' + SITE.lng.toFixed(6) + ', ' + SITE.lat.toFixed(6) + '</b>' +
+      '&nbsp;（纠偏 ' + Math.round(havM([SITE.wgs[0], SITE.wgs[1]], [SITE.lng, SITE.lat])) + ' m）';
+
+    map = new AMap.Map('map', {
+      center: [SITE.lng, SITE.lat],
+      zoom: 15,
+      viewMode: '3D',
+      pitch: 0,
+      rotation: 0,
+      showBuildingBlock: false,
+      resizeEnable: true
+    });
+
+    try { map.addControl(new AMap.Scale({ position: 'RB' })); } catch (e) {}
+
+    /* --- 1. 卫星底图（最底层）；关掉矢量底图的路名/POI，避免压在影像上 --- */
+    try { map.setFeatures([]); } catch (e) {}
+    try {
+      satellite = new AMap.TileLayer.Satellite({ zIndex: 5 });
+      map.add(satellite);
+      var ls = (map.getLayers ? map.getLayers() : null) || [];
+      var has = false;
+      for (var i = 0; i < ls.length; i++) if (ls[i] === satellite) has = true;
+      if (!has) map.setLayers(ls.concat([satellite]));
+    } catch (e) { showHint('卫星底图创建失败：' + e.message, 0); }
+
+    ov = $('ov');
+    ctx = ov.getContext('2d');
+    rc = document.createElement('canvas');
+    rctx = rc.getContext('2d');
+    sizeCanvas();
+
+    applyUI(uiOn);          /* 侧栏 / 图例的初始显隐（配置 ui.show） */
+    buildFitButtons();      /* 视野档位由配置生成，再绑事件 */
+    bindUI();
+    syncSwitches();         /* 图层开关的初始状态跟配置走 */
+    syncLegendColors();     /* 图例色块跟配置同色 */
+    initLoc();
+    fitRadius((CFG2.view && CFG2.view.initial) || 500);
+    /* 默认坐标也实时构建：等地图首帧完成再发，避免和底图瓦片抢带宽。
+       地图的 complete 事件偶发不触发，另给一个 2.5 s 兜底。 */
+    var started = false;
+    function startDefault() {
+      if (started) return;
+      started = true;
+      rebuild(SITE.lng, SITE.lat);
+    }
+    try {
+      map.on('complete', function () { setTimeout(startDefault, 300); });
+    } catch (e) {}
+    setTimeout(startDefault, 2500);
+    map.on('moveend', onViewChange);
+    map.on('zoomend', onViewChange);
+    map.on('complete', function () { project(); draw(false); });
+    /* 拖动 / 缩放过程中只搬运上一帧的成品位图（一次 drawImage），
+       停手 120 ms 后再重新投影 + 全量绘制。
+       避免在每个 mapmove/zoomchange 帧中重投影和重绘。  */
+    var ticking = false;
+    function quick() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () { ticking = false; blit(); scheduleFull(); });
+    }
+    map.on('mapmove', quick);
+    map.on('zoomchange', quick);
+    window.__map = map;
+    setTimeout(function () { setBase(baseMode); draw(false); }, 300);
+  }
+
+  function sizeCanvas() {
+    var w = window.innerWidth, h = window.innerHeight;
+    ov.width = Math.round(w * DPR);
+    ov.height = Math.round(h * DPR);
+    ov.style.width = w + 'px';
+    ov.style.height = h + 'px';
+  }
+  window.addEventListener('resize', function () { sizeCanvas(); project(); draw(false); });
+
+  /* ================= 数据预处理 ================= */
+  var GEO = { green: [], water: [], waterways: [], roadA: [], roadAB: [], roadL: [], transit: [], pois: [], roadNames: [],
+              amen: { shop: [], gov: [], sport: [], park: [] } };
+  var PX = { green: [], water: [], waterways: [], roadA: [], transit: [], pois: [], roadNames: [],
+             amen: { shop: [], gov: [], sport: [], park: [] } };
+  /* 城市级（5km+）：全部用「距场地中心的米」存，绘制时按 mpp 换算像素 */
+  var CITY = null;   /* 城市级数据同样只来自实时构建 */
+  /* metro 必须在这里就存在：数据到货前地图 complete 会先跑一次 project()，
+     少了这个键就是 CG.metro.map is not a function 的 undefined。 */
+  var CG = { dist: [], exp: [], expB: [], districtName: '', rail: [], air: [], metro: [],
+             expLabels: [], cityName: null };
+  var PXc = { rail: [], air: [], metro: [], expLabels: [] };
+
+  /* 高德是球面墨卡托：1° 经度、1° 纬度的地面长度都按 111319.49 m 折算（经度再乘 cosφ）。
+     原来纬度用 110540（椭球值），南北向整体缩短 0.7%，2 km 处差出去约 15 m，
+     放大到 2 km 视野时道路就跟底图街道对不上了。 */
+  var K = 111319.49,
+      KX = K * Math.cos(SITE.lat * Math.PI / 180), KY = K;
+  /* 换场地要重算经度方向的米/度（cosφ 随纬度变），否则南北向会被拉长压短；
+     同时必须把缓存的 AMap.LngLat 丢掉 —— 它只在第一次投影时创建，
+     换了坐标还留着旧值的话，metersPerPixel 会算成 0、p0 会跑到画布外几十万像素，
+     道路 / 高速 / 分析圈全部消失（只剩用经纬度直接投影的绿地水系）。 */
+  function recalcK() {
+    KX = K * Math.cos(SITE.lat * Math.PI / 180);
+    KY = K;
+    SITE_LL = new AMap.LngLat(SITE.lng, SITE.lat);
+  }
+  function toM(lng, lat) { return [(lng - SITE.lng) * KX, (lat - SITE.lat) * KY]; }
+
+  /* 道路中心线：把 L.roadLines（米制折线 + 路宽）铺成 GEO.roadL。
+     单独抽出来是为了「街道升级包」能就地重建 —— 先用瓦片骨架起第一帧，
+     OSM 矢量到了再整体换掉，两条路走的是同一段代码。 */
+  function buildRoadLayer() {
+    GEO.roadL = [];
+    var RL = L.roadLines || [], rlen = 0;
+    RL.forEach(function (c) {
+      var xy = c.xy, w = c.w || 4;
+      for (var j = 2; j < xy.length; j += 2) {
+        rlen += Math.hypot(xy[j] - xy[j - 2], xy[j + 1] - xy[j - 1]);
+      }
+      var bx = [1e9, 1e9, -1e9, -1e9];
+      for (var i = 0; i < xy.length; i += 2) {
+        if (xy[i] < bx[0]) bx[0] = xy[i];
+        if (xy[i] > bx[2]) bx[2] = xy[i];
+        if (xy[i + 1] < bx[1]) bx[1] = xy[i + 1];
+        if (xy[i + 1] > bx[3]) bx[3] = xy[i + 1];
+      }
+      /* 三级：主干 ≥20 m / 次干 10~20 m / 支路 <10 m。
+         w 是路宽（米）：瓦片量出来的真实宽度，或 OSM 按等级给的宽度 */
+      var lv = w >= 20 ? 0 : w >= 10 ? 1 : 2;
+      GEO.roadL.push({ xy: xy, lv: lv, b: bx });
+    });
+    pickViews();
+    return rlen;
+  }
+
+  /* ================= 实景视点：自动挑正东南西北四条路 =================
+     把每条道路折线按「到场地中心最近的那个点」折出来，得到它的方位角；
+     哪个方向落在 ±spread 里就参与该方向的竞争，
+     评分 = 距离 + 夹角惩罚 - 主干加成（宽路更像"街景车走的那条"）。
+     选中的点就是视点（站在路上），视线方向 = 视点 - 场地中心，即背向基点朝外。 */
+  var VIEWS = [];
+  var DIR_DEG = [0, 90, 180, 270];
+  var DIR_CN = ['北', '东', '南', '西'];
+
+  function angDiff(a, b) {
+    var d = Math.abs(a - b) % 360;
+    return d > 180 ? 360 - d : d;
+  }
+
+  /* 给视点找路名：在同方向的锚点里取离视点最近的一个。
+     不能按折线下标匹配 —— OSM 一条街被切成很多段，锚点往往落在别的段上，
+     按段号匹配的结果就是四条全是"道路"。 */
+  function nameForView(px, py, brg) {
+    if (!L.roadNames || !L.roadNames.length) return '';
+    var best = 1e9, nm = '';
+    for (var i = 0; i < L.roadNames.length; i++) {
+      var t = L.roadNames[i];
+      if (!t || !t.name) continue;
+      var m = toM(t.lng, t.lat);
+      var dx = m[0] - px, dy = m[1] - py;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d > 300) continue;
+      var b = (Math.atan2(m[0], m[1]) * 180 / Math.PI + 360) % 360;
+      if (angDiff(b, brg) > 55) continue;
+      if (d < best) { best = d; nm = t.name; }
+    }
+    return nm;
+  }
+
+  function pickViews() {
+    VIEWS = [];
+    var cfg = CFG2.views || {};
+    var R = cfg.radius || 340, SP = cfg.spread || 45;
+    var RL = GEO.roadL || [];
+    /* 每个方向先存一批候选（不是只存最好的一个）：
+       后面要做 55 m 的最小间距检查，四个视点挤在路口同一点时能退到次近的路上。 */
+    var cands = [[], [], [], []];
+    for (var a = 0; a < RL.length; a++) {
+      var q = RL[a].xy;
+      for (var j = 2; j < q.length; j += 2) {
+        var x0 = q[j - 2], y0 = q[j - 1], vx = q[j] - x0, vy = q[j + 1] - y0;
+        var vv = vx * vx + vy * vy;
+        var t = vv > 0 ? -(x0 * vx + y0 * vy) / vv : 0;
+        if (t < 0) t = 0; else if (t > 1) t = 1;
+        var px = x0 + vx * t, py = y0 + vy * t;
+        var d = Math.sqrt(px * px + py * py);
+        if (d < 26 || d > R) continue;
+        var brg = (Math.atan2(px, py) * 180 / Math.PI + 360) % 360;
+        for (var i = 0; i < 4; i++) {
+          var diff = angDiff(brg, DIR_DEG[i]);
+          if (diff > SP) continue;
+          /* 目标是「最近的有街景的路」；目前查不到街景覆盖，先退化成「最近的路」，
+             所以只按距离排，夹角只做同距离时的微调，主干加成取消。 */
+          /* 距离优先，但方向偏一点点也要付代价（0.8 m/度）：
+             差 30 m 内时宁可要更"正"的那条，免得四个角全歪成东南西北偏。 */
+          cands[i].push({ i: i, mx: px, my: py, d: d, brg: brg, road: a,
+                          score: d + diff * 1.6 });
+        }
+      }
+    }
+    var picked = [];
+    for (var k2 = 0; k2 < 4; k2++) {
+      var list = cands[k2].sort(function (x, y) { return x.score - y.score; });
+      var b = null;
+      /* 取最近的，但要求离已选视点 ≥ 55 m —— 基地在路口时，
+         "正东"和"正南"最近点常常是同一个路口，两个扇形会完全叠住。 */
+      for (var c = 0; c < list.length && c < 8; c++) {
+        var okSep = true;
+        for (var q2 = 0; q2 < picked.length; q2++) {
+          if (Math.hypot(list[c].mx - picked[q2].mx, list[c].my - picked[q2].my) < 55) {
+            okSep = false;
+            break;
+          }
+        }
+        if (okSep) { b = list[c]; break; }
+      }
+      if (!b && list.length) b = list[0];
+      if (!b) {
+        /* 该方向 R 米内没有路：放一个虚拟视点在 110 m 处，编号照出，照片走占位图 */
+        var rad = DIR_DEG[k2] * Math.PI / 180;
+        b = { i: k2, mx: Math.sin(rad) * 110, my: Math.cos(rad) * 110,
+              brg: DIR_DEG[k2], road: -1, none: true };
+      }
+      b.i = k2;
+      var len = Math.sqrt(b.mx * b.mx + b.my * b.my) || 1;
+      b.dx = b.mx / len; b.dy = b.my / len;
+      b.name = b.none ? '' : nameForView(b.mx, b.my, DIR_DEG[k2]);
+      picked.push(b);
+      VIEWS.push(b);
+    }
+    window.SITE_VIEWS = VIEWS;
+    var cv = $('ct-view');
+    if (cv) cv.textContent = VIEWS.length;
+    renderViewsPanel();
+  }
+
+  /* 视点的 GCJ-02 坐标 → 百度 URI API（coord_type=gcj02，百度自己转 BD-09） */
+  function bdUrl(v) {
+    var lng = SITE.lng + v.mx / KX, lat = SITE.lat + v.my / KY;
+    return 'https://api.map.baidu.com/marker?location=' + lat.toFixed(6) + ',' + lng.toFixed(6) +
+           '&title=' + encodeURIComponent((v.i + 1) + ' · ' + DIR_CN[v.i] + '侧视点') +
+           '&content=' + encodeURIComponent(v.name || '周边实景') +
+           '&output=html&coord_type=gcj02&src=webapp';
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  /* 右侧照片栏：编号 / 照片 / 朝向 + 路名；仅显示已有实景照片。
+     点一条 = 地图飞到该视点（视野不变），方便对照着看。 */
+  function renderViewsPanel() {
+    var box = $('views');
+    if (!box) return;
+    var photos = window.SITE_PHOTOS || {};
+    var caps = (CFG2.views && CFG2.views.captions) || [];
+    var html = '';
+    VIEWS.forEach(function (v) {
+      var src = photos[String(v.i + 1)];
+      if (!src) return;
+      var nm = caps[v.i] || (v.none ? '无道路 · 占位' : (v.name || '道路'));
+      /* 整张卡就是链接：点图 = 新标签页打开百度地图该坐标（到了再切街景）
+         用 <a> 而不是 div+onclick，中键/右键"新标签页打开"也能用。 */
+      html += '<a class="vp" data-i="' + v.i + '" data-d="' + v.i + '" ' +
+              'href="' + bdUrl(v) + '" target="_blank" rel="noopener" ' +
+              'title="新标签页打开百度地图（可切街景）">' +
+              '<img src="' + src + '" alt="' + DIR_CN[v.i] + '侧实景">' +
+              '<div class="num">' + (v.i + 1) + '</div>' +
+              '<div class="cap"><b>' + DIR_CN[v.i] + '</b><i>' + esc(nm) + '</i>' +
+              '<span class="go">百度地图 ↗</span></div></a>';
+    });
+    box.innerHTML = html;
+  }
+
+  /* 视口示意角：扇面 + 两条边 + 编号圆点。
+     长度按屏幕像素再夹一次，免得 500 m 视野里太小、远景糊成一片。 */
+  function drawViewBadge(ax, ay, col, i) {
+    ctx.beginPath();
+    ctx.arc(ax, ay, 9, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.fillStyle = '#3b1d00';
+    ctx.font = '700 11px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(i + 1), ax, ay + 0.5);
+  }
+
+  function drawViews(p0, mpp) {
+    var cfg = CFG2.views || {};
+    var st = layerCfg('view').stroke || {}, fl = layerCfg('view').fill || {};
+    var col = st.color || '#f59e0b';
+    var half = (cfg.halfAngle || 21) * Math.PI / 180;
+    var len = (cfg.coneLen || 90) / mpp;
+    if (len < 46) len = 46; else if (len > 140) len = 140;
+    ctx.save();
+    for (var i = 0; i < VIEWS.length; i++) {
+      var v = VIEWS[i];
+      var ax = p0.x + v.mx / mpp, ay = p0.y - v.my / mpp;
+      var dir = Math.atan2(-v.dy, v.dx);        /* 屏幕 y 向下，方向取反 */
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      for (var k = 0; k <= 14; k++) {
+        var a = dir - half + 2 * half * k / 14;
+        ctx.lineTo(ax + Math.cos(a) * len, ay + Math.sin(a) * len);
+      }
+      ctx.closePath();
+      var fo = fl.opacity === undefined ? 0.16 : fl.opacity;
+      if (fo > 0) {
+        ctx.fillStyle = rgbaOf(fl.color || col, fo);
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.moveTo(ax + Math.cos(dir - half) * len, ay + Math.sin(dir - half) * len);
+      ctx.lineTo(ax, ay);
+      ctx.lineTo(ax + Math.cos(dir + half) * len, ay + Math.sin(dir + half) * len);
+      /* 先描一层浅色晕边再描橙色：卫星图本身偏暖、路网又是棕橙色，
+         不加这层的话视口角会跟道路糊在一起，远看只剩几个点。 */
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+      ctx.lineWidth = (st.width || 1.9) + 2.4;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.strokeStyle = rgbaOf(col, st.opacity === undefined ? 0.95 : st.opacity);
+      ctx.lineWidth = st.width || 1.9;
+      ctx.stroke();
+      /* 编号圆点：屏幕固定大小，不随缩放变 */
+      drawViewBadge(ax, ay, col, i);
+    }
+    ctx.restore();
+  }
+
+  function prepare() {
+    function ring(r) {
+      var a = [];
+      for (var i = 0; i < r.length; i++) a.push(new AMap.LngLat(r[i][0], r[i][1]));
+      return a;
+    }
+    L.green.forEach(function (it) { if (it.ring) GEO.green.push({ ring: ring(it.ring), area: it.area }); });
+    L.water.forEach(function (it) { if (it.ring) GEO.water.push({ ring: ring(it.ring), area: it.area }); });
+    /* 河道（OSM waterway 线）：和水面共用「水系」图层、图例和开关。
+       数据侧已经转成「相对基地的米」，这里只补一个 bbox 供视野裁剪。 */
+    (L.waterWays || []).forEach(function (it) {
+      var q = it.xy;
+      if (!q || q.length < 4) return;
+      var bx = [1e9, 1e9, -1e9, -1e9];
+      for (var wi0 = 0; wi0 < q.length; wi0 += 2) {
+        if (q[wi0] < bx[0]) bx[0] = q[wi0];
+        if (q[wi0] > bx[2]) bx[2] = q[wi0];
+        if (q[wi0 + 1] < bx[1]) bx[1] = q[wi0 + 1];
+        if (q[wi0 + 1] > bx[3]) bx[3] = q[wi0 + 1];
+      }
+      GEO.waterways.push({ xy: q, w: it.w || 8, measured: it.measured, tier: it.tier == null ? 2 : it.tier,
+                           cls: it.cls, name: it.name, b: bx });
+    });
+    PX.waterways = GEO.waterways;
+    /* 道路面域：米制偏移整数（1 m），绘制时按 mpp 换算像素 */
+    /* ---------- 道路中心线：按真实路宽分三档 ---------- */
+    var rlen = buildRoadLayer();
+
+    var RA = L.roadArea || [];
+    var area2 = 0;
+    RA.forEach(function (a) {
+      /* 数据侧按分米存（0.1 m 精度），这里一次换成米，后面 bbox / 面积 / 绘制都用米 */
+      var r = new Array(a.length);
+      for (var q = 0; q < a.length; q++) r[q] = a[q] * 0.1;
+      GEO.roadA.push(r);
+      var bx = [1e9, 1e9, -1e9, -1e9];
+      for (var i = 0; i < r.length; i += 2) {
+        if (r[i] < bx[0]) bx[0] = r[i];
+        if (r[i] > bx[2]) bx[2] = r[i];
+        if (r[i + 1] < bx[1]) bx[1] = r[i + 1];
+        if (r[i + 1] > bx[3]) bx[3] = r[i + 1];
+      }
+      GEO.roadAB.push(bx);
+      var sh = 0;
+      for (var k = 0; k < r.length; k += 2) {
+        var n = (k + 2) % r.length;
+        sh += r[k] * r[n + 1] - r[n] * r[k + 1];
+      }
+      /* 有符号累加：外轮廓为正、街区孔洞为负，二者相抵才是真实路面面积 */
+      area2 += sh / 2;
+    });
+    /* 公交点取自 L.bus。旧数据的 transit 字段可能同时含地铁站。 */
+    (L.bus || []).forEach(function (t) { GEO.transit.push({ p: new AMap.LngLat(t.lng, t.lat), name: t.name, d: t.dist }); });
+    /* 配套：商业 / 行政 / 体育 / 公园 */
+    var am0 = L.amenities || {};
+    ['shop', 'gov', 'sport', 'park'].forEach(function (k) {
+      GEO.amen[k] = (am0[k] || []).map(function (t) {
+        return { p: new AMap.LngLat(t.lng, t.lat), name: t.name, d: t.dist };
+      });
+    });
+    /* 绿地/景点 POI 名称不再画：绿地名只留「公园」那一类（见下面 amen.park） */
+    (L.roadNames || []).forEach(function (t) { GEO.roadNames.push({ p: new AMap.LngLat(t.lng, t.lat), name: t.name }); });
+
+    $('ct-green').textContent = GEO.green.length;
+    /* 水面和河道合并成「水系」一项：数字给合计，明细（几片水 / 几条河）放 tooltip */
+    var cw0 = $('ct-water');
+    if (cw0) {
+      cw0.textContent = GEO.water.length + GEO.waterways.length;
+      cw0.title = '水面 ' + GEO.water.length + ' 个 · 河道 ' + GEO.waterways.length + ' 段';
+    }
+    var ctr = $('ct-road');
+    /* 现在画的是中心线，数值改用道路总长度（面积留给面域口径，已不再绘制） */
+    if (ctr) ctr.textContent = (rlen / 1000).toFixed(1) + ' km';
+    var cbus = $('ct-bus');
+    if (cbus) cbus.textContent = GEO.transit.length;
+    ['shop', 'gov', 'sport'].forEach(function (k) {
+      var el = $('ct-' + k);
+      if (el) el.textContent = GEO.amen[k].length;
+    });
+    /* 绿地的数字把公园点也算进去：两者现在是一个图层 */
+    var cg2 = $('ct-green');
+    if (cg2) cg2.textContent = GEO.green.length + (GEO.amen.park ? GEO.amen.park.length : 0);
+
+    /* ---------- 城市级：区县 / 高架高速 / 车站机场 ---------- */
+    if (CITY) {
+      if (CITY.district) {
+        CG.districtName = CITY.district.name || '';
+        (CITY.district.rings || []).forEach(function (r) {
+          var a = [], sx = 0, sy = 0;
+          for (var i = 0; i < r.length; i++) {
+            var m = toM(r[i][0], r[i][1]);
+            a.push(m[0], m[1]); sx += m[0]; sy += m[1];
+          }
+          CG.dist.push({ xy: a, c: [sx / r.length, sy / r.length] });
+        });
+        var cd = $('ct-dist');
+        if (cd) cd.textContent = CG.districtName || '—';
+      }
+      loadExpress(CITY.express || []);
+      updateExpCount();
+      CG.rail = CITY.rail || [];
+      CG.air = CITY.air || [];
+      /* 兼容实时构建的 CITY.metro 和旧版离线的 L.metro。 */
+      CG.metro = (CITY.metro && CITY.metro.length) ? CITY.metro : (L.metro || []);
+      PXc.metro = CG.metro.map(function (t) { return map.lngLatToContainer(new AMap.LngLat(t.lng, t.lat)); });
+      var cm = $('ct-metro');
+      if (cm) cm.textContent = CG.metro.length;
+      CG.expLabels = CITY.expressLabels || [];
+      CG.cityName = CITY.cityName || null;
+      var cr = $('ct-rail'), ca = $('ct-air');
+      if (cr) cr.textContent = CG.rail.length;
+      if (ca) ca.textContent = CG.air.length;
+    }
+
+    project();
+  }
+
+  /* 高速几何：把 [{name, path:[[lng,lat],...], L}] 装进 CG.exp（米坐标 + 包围盒）。
+     离线数据、实时构建的栅格骨架、后来异步到货的 OSM 矢量，走的都是这一个口子。 */
+  function loadExpress(list) {
+    CG.exp = [];
+    CG.expB = [];
+    (list || []).forEach(function (e) {
+      var p = e.path;
+      if (!p || p.length < 2) return;
+      var a = new Array(p.length * 2);
+      var bx = [1e9, 1e9, -1e9, -1e9];
+      for (var i = 0; i < p.length; i++) {
+        var m = toM(p[i][0], p[i][1]);
+        a[i * 2] = Math.round(m[0]); a[i * 2 + 1] = Math.round(m[1]);
+        if (a[i * 2] < bx[0]) bx[0] = a[i * 2];
+        if (a[i * 2] > bx[2]) bx[2] = a[i * 2];
+        if (a[i * 2 + 1] < bx[1]) bx[1] = a[i * 2 + 1];
+        if (a[i * 2 + 1] > bx[3]) bx[3] = a[i * 2 + 1];
+      }
+      CG.exp.push({ xy: a, name: e.name || '', L: e.L || 0, ring: !!e.ring });
+      CG.expB.push(bx);
+    });
+  }
+
+  function updateExpCount() {
+    var ce = $('ct-exp');
+    if (!ce) return;
+    var km = CG.exp.reduce(function (s, c) { return s + c.L; }, 0) / 1000;
+    ce.textContent = km ? km.toFixed(0) + ' km' : '—';
+  }
+
+  /* OSM 高速到货后整体替换：栅格骨架只能当占位，50 km 尺度上它必然是碎的。 */
+  function applyExpress(list) {
+    if (!list || !list.length) return 0;
+    loadExpress(list);
+    var best = {};
+    list.forEach(function (e) {
+      if (!e.name) return;
+      var mid = e.path[Math.floor(e.path.length / 2)];
+      if (!best[e.name] || e.L > best[e.name].L) {
+        best[e.name] = { name: e.name, lng: mid[0], lat: mid[1], L: e.L };
+      }
+    });
+    /* 矢量瓦片来的线有时没有路名（名字在 transportation_name 图层，未必对得上）。
+       这时候保留 build 阶段由高德 POI 算出来的 expLabels，别把标注清空。 */
+    if (Object.keys(best).length) {
+      CG.expLabels = Object.keys(best).map(function (k) { return best[k]; });
+    }
+    updateExpCount();
+    project();
+    draw(false);
+    return CG.exp.length;
+  }
+
+  /* 把经纬度投影成容器像素（仅缩放/尺寸变化时重算；平移用整体位移补偿） */
+  var p0 = null;        /* 最近一次投影时的场地中心像素 */
+  var baseP0 = null;    /* 同上，供绘制使用 */
+  var SITE_LL = null;
+  function project() {
+    if (!L || !map) return;
+    if (!SITE_LL) SITE_LL = new AMap.LngLat(SITE.lng, SITE.lat);
+    function conv(arr) {
+      var out = [];
+      for (var i = 0; i < arr.length; i++) {
+        var ring = arr[i], rr = [];
+        if (ring.ring) ring = ring.ring;
+        for (var j = 0; j < ring.length; j++) {
+          var q = map.lngLatToContainer(ring[j]);
+          rr.push(q.x, q.y);
+        }
+        out.push({ xy: rr, src: arr[i] });
+      }
+      return out;
+    }
+    PX.green = conv(GEO.green);
+    PX.water = conv(GEO.water);
+    PX.roadA = GEO.roadA;
+    PX.transit = GEO.transit.map(function (t) { var q = map.lngLatToContainer(t.p); return { x: q.x, y: q.y, src: t }; });
+    PX.pois = GEO.pois.map(function (t) { var q = map.lngLatToContainer(t.p); return { x: q.x, y: q.y, src: t }; });
+    PX.roadNames = GEO.roadNames.map(function (t) { var q = map.lngLatToContainer(t.p); return { x: q.x, y: q.y, src: t }; });
+    PXc.rail = CG.rail.map(function (t) { var q = map.lngLatToContainer(new AMap.LngLat(t.lng, t.lat)); return { x: q.x, y: q.y, src: t }; });
+    PXc.air = CG.air.map(function (t) { var q = map.lngLatToContainer(new AMap.LngLat(t.lng, t.lat)); return { x: q.x, y: q.y, src: t }; });
+    PXc.metro = CG.metro.map(function (t) { var q = map.lngLatToContainer(new AMap.LngLat(t.lng, t.lat)); return { x: q.x, y: q.y, src: t }; });
+    PXc.expLabels = CG.expLabels.map(function (t) { var q = map.lngLatToContainer(new AMap.LngLat(t.lng, t.lat)); return { x: q.x, y: q.y, src: t }; });
+    ['shop', 'gov', 'sport', 'park'].forEach(function (k) {
+      PX.amen[k] = GEO.amen[k].map(function (t) {
+        var q = map.lngLatToContainer(t.p); return { x: q.x, y: q.y, src: t };
+      });
+    });
+    var c = map.lngLatToContainer(SITE_LL);
+    p0 = { x: c.x, y: c.y };
+    baseP0 = { x: c.x, y: c.y };
+  }
+
+  var lastZ = null;
+  function onViewChange() {
+    lastZ = map.getZoom();
+    scheduleFull();
+  }
+
+  /* 视图稳定后补一次「带标注」的完整绘制（程序化跳转不一定触发 moveend） */
+  var fullTimer;
+  function scheduleFull() {
+    clearTimeout(fullTimer);
+    fullTimer = setTimeout(function () { project(); draw(false); }, 120);
+  }
+
+  /* ================= 绘制 ================= */
+  window.__rings = RINGS;
+  /* 现场诊断出口：出问题时可从控制台看各图层真实几何量 */
+  window.__ovState = function () {
+    return { z: map ? map.getZoom() : null, mpp: metersPerPixel(), p0: baseP0,
+             road: GEO.roadL.length, green: PX.green.length, water: PX.water.length,
+             waterWay: PX.waterways.length,
+             bus: PX.transit.length, metro: PXc.metro.length,
+             dist: CG.dist.length, exp: CG.exp.length,
+             roadSample: (GEO.roadL[0] || {}).xy ? GEO.roadL[0].xy.slice(0, 6) : null,
+             vis: { green: vis.green, water: vis.water, road: vis.road,
+                    metro: vis.metro, bus: vis.bus, ring: vis.ring,
+                    shop: vis.shop, gov: vis.gov, sport: vis.sport, park: vis.green,
+                    district: vis.district, express: vis.express, rail: vis.rail, air: vis.air },
+             amen: { shop: PX.amen.shop.length, gov: PX.amen.gov.length,
+                     sport: PX.amen.sport.length, park: PX.amen.park.length },
+             city: CG.cityName ? CG.cityName.name : null,
+             expNm: CG.expLabels.length, waterNm: (L && L.waterNames || []).length };
+  };
+  /* 公园并入绿地：一个开关同时管绿地面域和公园点位/名称 */
+  var vis = { green: true, water: true, road: true, metro: true, bus: true,
+              shop: true, gov: true, sport: true,
+              district: true, express: true, rail: true, air: true, ring: true, view: true };
+  /* 图层开关的初始状态取配置；公园跟着 green 走，不单独配置 */
+  Object.keys(vis).forEach(function (k) {
+    var c = layerCfg(k);
+    if (c && typeof c.on === 'boolean') vis[k] = c.on;
+  });
+
+  /* 侧栏 + 图例的整体显隐：ui.show 决定初值，左上角的按钮随时切换。
+     出图时把它设成 false，只留地图，方便排版直接截图。 */
+  var uiOn = !(CFG2.ui && CFG2.ui.show === false);
+  function applyUI(v) {
+    uiOn = (v !== false);
+    document.body.classList.toggle('ui-off', !uiOn);
+    var t = $('ui-toggle');
+    if (t) {
+      t.classList.toggle('off', !uiOn);
+      t.title = uiOn ? '隐藏侧栏与图例' : '显示侧栏与图例';
+    }
+  }
+
+  /* 当前缩放下每像素代表多少米（用于把"米"换算成屏幕宽度） */
+  function metersPerPixel() {
+    if (!map) return 4;
+    var c = map.lngLatToContainer(SITE_LL);
+    var e = map.lngLatToContainer(circlePoint(SITE.lng, SITE.lat, 200, 90));
+    var d = Math.hypot(e.x - c.x, e.y - c.y);
+    return d > 0.5 ? 200 / d : 4;
+  }
+
+  /* 面图层的三种画法，由配置的 style 决定：
+       polygon = 填面（可带描边）；line = 只描边；point = 画在每个面的质心上的点。
+     绿地、水系走同一个函数，改 JSON 里的 style 就换画法。 */
+  function polyLayer(k, list, bboxList) {
+    var cfg = layerCfg(k), mode = cfg.style || 'polygon';
+    var f = cfg.fill || {}, fo = (f.opacity === undefined ? 1 : f.opacity);
+    var st = cfg.stroke || {}, so = (st.opacity === undefined ? 1 : st.opacity);
+    var canFill = (mode !== 'line') && fo > 0;
+    var canStroke = so > 0 && (st.width || 0) > 0;
+    if (canFill) setFill(k);
+    if (canStroke && mode !== 'point') setStroke(k);
+    var sz = (cfg.size || 4) / 2;
+    for (var i = 0; i < list.length; i++) {
+      if (bboxList && !inView(bboxList[i])) continue;
+      var xy = list[i].xy;
+      if (!xy || xy.length < 6) continue;
+      if (mode === 'point') {
+        var sx = 0, sy = 0, n = xy.length / 2;
+        for (var j = 0; j < xy.length; j += 2) { sx += xy[j]; sy += xy[j + 1]; }
+        ctx.beginPath();
+        ctx.arc(sx / n, sy / n, sz, 0, Math.PI * 2);
+        if (canFill) ctx.fill();
+        if (canStroke) ctx.stroke();
+        continue;
+      }
+      ctx.beginPath();
+      ctx.moveTo(xy[0], xy[1]);
+      for (var m = 2; m < xy.length; m += 2) ctx.lineTo(xy[m], xy[m + 1]);
+      ctx.closePath();
+      if (canFill) ctx.fill();
+      if (canStroke) ctx.stroke();
+    }
+  }
+
+  /* 把某一层的填充/描边落到 ctx 上。所有绘制都走这两个函数，
+     改 site.config.json 里的颜色、透明度、线宽、线型就立刻生效。 */
+  function setFill(k) {
+    var f = layerCfg(k).fill || {};
+    ctx.fillStyle = rgbaOf(f.color, f.opacity);
+  }
+  function setStroke(k, wOverride) {
+    var st = layerCfg(k).stroke || {};
+    ctx.strokeStyle = rgbaOf(st.color, st.opacity);
+    ctx.lineWidth = (wOverride !== undefined && wOverride !== null) ? wOverride : (st.width || 1);
+    ctx.setLineDash(dashOf(st.dash));
+  }
+  /* 点：size 是直径（圆的直径 / 方点的边长） */
+  function dotK(x, y, k) {
+    var s0 = layerCfg(k), st = s0.stroke || {};
+    ctx.beginPath();
+    ctx.arc(x, y, (s0.size || 8) / 2, 0, Math.PI * 2);
+    setFill(k);
+    ctx.fill();
+    if ((st.width || 0) > 0) { setStroke(k); ctx.stroke(); }
+  }
+
+  function draw(light) {
+    if (!ctx || !map) return;
+    var w = ov.width / DPR, h = ov.height / DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    if (!L || !baseP0) return;
+
+    /* 平移时底图移动量与要素缓存坐标的像素差：用整体位移保证拖拽时不脱图 */
+    var cur = map.lngLatToContainer(SITE_LL);
+    var ox = cur.x - baseP0.x, oy = cur.y - baseP0.y;
+    ctx.setTransform(DPR, 0, 0, DPR, ox * DPR, oy * DPR);
+    var p0 = baseP0;
+    /* 地块级只有 4 km 见方的要素数据，缩到更远就只剩城市级和圈 */
+    var nearOn = map.getZoom() >= Z_SPLIT;
+    var cityOn = !nearOn;
+    updateLegend(nearOn);
+    var mpp = metersPerPixel();
+    /* 视野对应的米制矩形（要素坐标就是「距场地中心的米数」），外扩一点避免边缘缺口 */
+    var vp = 80 * mpp;
+    var vx0 = (0 - p0.x) * mpp - vp, vx1 = (w - p0.x) * mpp + vp;
+    var vy0 = (p0.y - h) * mpp - vp, vy1 = p0.y * mpp + vp;
+    function inView(b) {
+      return !(b[2] < vx0 || b[0] > vx1 || b[3] < vy0 || b[1] > vy1);
+    }
+
+    /* --- 1.5 所在区县（半透明橙色面 + 白色粗轮廓，画在一切面域之下） --- */
+    if (cityOn && vis.district && CG.dist.length) {
+      var inv0 = 1 / mpp;
+      ctx.beginPath();
+      for (var di = 0; di < CG.dist.length; di++) {
+        var r0 = CG.dist[di].xy;
+        if (r0.length < 6) continue;
+        ctx.moveTo(p0.x + r0[0] * inv0, p0.y - r0[1] * inv0);
+        for (var dj = 2; dj < r0.length; dj += 2) {
+          ctx.lineTo(p0.x + r0[dj] * inv0, p0.y - r0[dj + 1] * inv0);
+        }
+        ctx.closePath();
+      }
+      setFill('district');
+      ctx.fill();
+      ctx.lineJoin = 'round';
+      if (strokeOn('district')) { setStroke('district'); ctx.stroke(); }
+    }
+    /* --- 2. 绿地（绿色半透明面域，无描边） --- */
+    if (vis.green && nearOn) polyLayer('green', PX.green);
+    /* --- 3. 水系（蓝色半透明面域，无描边） --- */
+    if (vis.water && nearOn) polyLayer('water', PX.water);
+    /* --- 3b. 河道（waterway 线，和水面合并成「水系」一项）
+       城区河道在 OSM 里普遍是线不是面，只绘制面会遗漏线状河道。这里用和水面同一个颜色画粗线，线宽取河宽(米)/比例，
+       视觉上和水面连成一条；图层、图例、开关都不新增条目。 --- */
+    if (vis.water && nearOn && PX.waterways.length) {
+      var wc = layerCfg('water'), ww = wc.way || {};
+      if (ww.on !== false) {
+        var wFill = wc.fill || {};
+        var wCol = ww.color || wFill.color || '#2c7af2';
+        var wOp = ww.opacity == null
+          ? (wFill.opacity == null ? 0.55 : wFill.opacity) : ww.opacity;
+        var winv = 1 / mpp;
+        /* 这一段只在 nearOn（500 m / 2 km）里跑，线宽已经落到 2~20 px，
+           不用再按视野分级；更远的档位整个水系都不画。 */
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = rgbaOf(wCol, wOp);
+        for (var wj = 0; wj < PX.waterways.length; wj++) {
+          var wv = PX.waterways[wj];
+          if (!inView(wv.b)) continue;
+          ctx.beginPath();
+          ctx.moveTo(p0.x + wv.xy[0] * winv, p0.y - wv.xy[1] * winv);
+          for (var wk = 2; wk < wv.xy.length; wk += 2) {
+            ctx.lineTo(p0.x + wv.xy[wk] * winv, p0.y - wv.xy[wk + 1] * winv);
+          }
+          /* 河宽按米换算，最细 1.1 px（再细在 2 km 档就糊成一条发丝） */
+          ctx.lineWidth = Math.max(1.1, wv.w * winv);
+          ctx.stroke();
+        }
+      }
+    }
+    /* --- 4. 道路（中心线描边，按主干/次干/支路分三档线宽）
+       为什么从面域改回中心线：面域填充的是整片路面，边缘一膨胀、一平滑，
+       视觉中心就整体偏了，路口还填成斜切的块，读起来像"整条路转了角度"。
+       中心线的位置由骨架质心决定，贴合街道；宽度取瓦片里的真实路宽，
+       圆头圆角描边，没有折角。 --- */
+    if (vis.road && nearOn && GEO.roadL.length) {
+      var invr = 1 / mpp;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      /* 线宽按**真实路宽换算**：w(米) / mpp(米每像素)。
+         原来用固定像素（1.6~4.6 px），500 m 视野下支路只有 1.6 px，
+         和黑白卫星底图糊在一起，整片路网看着就是"断的"——其实数据是连的。
+         config 里的 width 数组改为**各档下限**，远景自动收到下限，近景按真实宽度铺开。 */
+      var rw0 = layerCfg('road').width;
+      var RW = (rw0 instanceof Array) ? rw0 : [rw0, rw0 * 0.6, rw0 * 0.35];
+      var WMUL = 0.4;                        /* 半宽：太肥会把整个街区盖掉 */
+      function lwOf(lv) {
+        if (lv === 0) return Math.max(RW[0] || 4, 22 / mpp * WMUL);
+        if (lv === 1) return Math.max(RW[1] || 3, 13 / mpp * WMUL);
+        return Math.max(RW[2] || 2, 7.5 / mpp * WMUL);
+      }
+      /* 一遍画：只描本色，不再先垫一圈深色底（描边）。
+         线端和转角保持 round，相邻段的接缝靠圆头自己盖住；
+         代价是接缝处的 1~2 px 缝偶尔会露出来，换来的是线更干净、不吃底图。 */
+      var roadPass = function () {
+        for (var lv = 2; lv >= 0; lv--) {          /* 由细到粗：粗路压在上面 */
+          var drew = false;
+          ctx.beginPath();
+          for (var a = 0; a < GEO.roadL.length; a++) {
+            var rr = GEO.roadL[a];
+            if (rr.lv !== lv || !inView(rr.b)) continue;
+            var q = rr.xy;
+            ctx.moveTo(p0.x + q[0] * invr, p0.y - q[1] * invr);
+            for (var k = 2; k < q.length; k += 2) {
+              ctx.lineTo(p0.x + q[k] * invr, p0.y - q[k + 1] * invr);
+            }
+            drew = true;
+          }
+          if (!drew) continue;
+          ctx.lineWidth = lwOf(lv);
+          ctx.stroke();
+        }
+      };
+      setStroke('road');
+      roadPass();
+    }
+    /* 高速公路按几何类型绘制，中心线描边，面状数据填充。 */
+    if (cityOn && vis.express && CG.exp.length) {
+      var inv1 = 1 / mpp;
+      /* 先画面 */
+      var anyRing = false;
+      ctx.beginPath();
+      for (var ei = 0; ei < CG.exp.length; ei++) {
+        var e0 = CG.exp[ei].xy;
+        if (!CG.exp[ei].ring || e0.length < 8 || !inView(CG.expB[ei])) continue;
+        ctx.moveTo(p0.x + e0[0] * inv1, p0.y - e0[1] * inv1);
+        for (var ej = 2; ej < e0.length; ej += 2) {
+          ctx.lineTo(p0.x + e0[ej] * inv1, p0.y - e0[ej + 1] * inv1);
+        }
+        ctx.closePath();
+        anyRing = true;
+      }
+      if (anyRing) {
+        setFill('express');
+        ctx.fill();
+        ctx.lineJoin = 'round';
+        if (strokeOn('express')) { setStroke('express'); ctx.stroke(); }
+      }
+      /* 再画线 */
+      var anyLine = false;
+      ctx.beginPath();
+      for (var li = 0; li < CG.exp.length; li++) {
+        var l0 = CG.exp[li].xy;
+        if (CG.exp[li].ring || l0.length < 4 || !inView(CG.expB[li])) continue;
+        ctx.moveTo(p0.x + l0[0] * inv1, p0.y - l0[1] * inv1);
+        for (var lj = 2; lj < l0.length; lj += 2) {
+          ctx.lineTo(p0.x + l0[lj] * inv1, p0.y - l0[lj + 1] * inv1);
+        }
+        anyLine = true;
+      }
+      if (anyLine) {
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        var ex = layerCfg('express'), ec = ex.core || {};
+        setStroke('express', ex.width);
+        ctx.stroke();
+        if ((ec.width || 0) > 0) {
+          ctx.strokeStyle = rgbaOf(ec.color, ec.opacity);
+          ctx.lineWidth = ec.width;
+          ctx.stroke();
+        }
+      }
+    }
+    /* --- 5. 公交站（琥珀色小点，比地铁站小一号） --- */
+    if (vis.bus && nearOn && PX.transit.length) {
+      PX.transit.forEach(function (t) { dotK(t.x, t.y, 'bus'); });
+    }
+    /* --- 5.5 高铁站 / 机场（城际交通） --- */
+    if (cityOn && vis.rail) {
+      PXc.rail.forEach(function (t) { dotK(t.x, t.y, 'rail'); });
+    }
+    if (cityOn && vis.air) {
+      PXc.air.forEach(function (t) { dotK(t.x, t.y, 'air'); });
+    }
+    /* 地铁站：只在近景画（步行尺度），蓝色大点 */
+    if (nearOn && vis.metro && PXc.metro.length) {
+      PXc.metro.forEach(function (t) {
+        var q = map.lngLatToContainer(new AMap.LngLat(t.src.lng, t.src.lat));
+        dotK(q.x - ox, q.y - oy, 'metro');
+      });
+    }
+    /* --- 5.6 配套（商业/行政/体育/公园，方形点：和交通的圆点一眼分开） --- */
+    ['shop', 'gov', 'sport', 'park'].forEach(function (k) {
+      if ((k === 'park' ? !vis.green : !vis[k]) || !nearOn) return;
+      var arr = PX.amen[k];
+      if (!arr || !arr.length) return;
+      var sz = layerCfg(k).size || 5, half = sz / 2, sc = strokeOn(k);
+      setFill(k);
+      if (sc) setStroke(k);
+      for (var ai2 = 0; ai2 < arr.length; ai2++) {
+        ctx.beginPath();
+        ctx.rect(arr[ai2].x - half, arr[ai2].y - half, sz, sz);
+        ctx.fill();
+        if (sc) ctx.stroke();
+      }
+    });
+    /* --- 7. 交通分析圈（红色粗虚线同心圆）
+       两个坑：
+       a) 不能直接用 ctx.arc。半径十几万像素时，屏幕上看到的那一小段弧
+          在数学上就是一条近乎笔直的线 —— 于是 5km/15km/30km 三个大圈
+          全变成了横穿画面的"直线"。必须按视口裁掉超出视野的圈。
+       b) 也不能当成纯圆画。3D 视图有俯仰和旋转时，地面上的圆投影到屏幕
+          是椭圆，用 arc 会错位。这里改成沿圆周取点、逐个投影。 --- */
+    if (vis.ring && p0) {
+      ctx.save();
+      setStroke('ring');
+      /* 半径上限：超过一屏高，画面上看到的那一小段弧就近乎直线了
+         （5km 视野里的 15km 圈、500m 视野里的 5km 圈，都是一条竖虚线）。
+         再加一条"整圆是否还在屏幕内"的判据，防止场地被拖到画面边缘时
+         只剩一段陡弧。 */
+      var farCorner = Math.hypot(Math.max(cur.x, w - cur.x),
+                                 Math.max(cur.y, h - cur.y));
+      var rCap = Math.min(w, h);
+      RINGS.forEach(function (g) {
+        var rp = map.lngLatToContainer(circlePoint(SITE.lng, SITE.lat, g.r, 90));
+        var r = Math.hypot(rp.x - cur.x, rp.y - cur.y);
+        g._r = r;
+        g._on = false;
+        if (r < 10 || r > rCap || r > farCorner * 0.92) return;
+        g._on = true;
+        var N = 96, started = false;
+        ctx.beginPath();
+        for (var i = 0; i <= N; i++) {
+          var q = map.lngLatToContainer(circlePoint(SITE.lng, SITE.lat, g.r, i * 360 / N));
+          var x = q.x - ox, y = q.y - oy;
+          if (!started) { ctx.moveTo(x, y); started = true; }
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+    /* --- 8. 项目位置（红点） --- */
+    if (p0) {
+      var pr = (layerCfg('project').size || 12) / 2;
+      ctx.beginPath();
+      ctx.arc(p0.x, p0.y, pr, 0, Math.PI * 2);
+      setFill('project');
+      ctx.fill();
+      if (strokeOn('project')) { setStroke('project'); ctx.stroke(); }
+    }
+
+    /* --- 8.5 实景视点 / 视口示意角
+       只在 500 m 档显示：这是"站在基地四周看外围"的示意图，
+       拉到 1 km 以上四个视点就挤成一团，扇形和照片都没有意义。 --- */
+    var viewZoomOn = nearOn && mpp <= 1.9;
+    var showViews = viewZoomOn && vis.view && VIEWS.length > 0;
+    if (viewZoomOn !== lastViewZoom) {
+      lastViewZoom = viewZoomOn;
+      /* 图层项与图例项也跟着 500 m 档一起出现/收起：
+         别让人在 2 km 视野里点一个"实景视点"，结果图上什么都没有。
+         注意只按 zoom 判，不看 vis.view —— 否则关掉开关后连回来的入口都没了。 */
+      var swV = document.querySelector('#layers .sw[data-k="view"]');
+      if (swV) swV.classList.toggle('hide', !viewZoomOn);
+      var lgV = document.querySelector('#legend .lg-view');
+      if (lgV) lgV.classList.toggle('hide', !viewZoomOn);
+    }
+    var vbox = $('views');
+    if (vbox) vbox.style.display = showViews ? '' : 'none';
+    if (showViews) drawViews(p0, mpp);
+
+    if (!light) labels(ox, oy, nearOn, cityOn);
+    if (!light) snapshot();
+  }
+
+  /* ============ 位图缓存：拖动/缩放只 blit 一张图，不再重放几千条路径 ============ */
+  var cacheCv = document.createElement('canvas');
+  var cacheCtx = null;
+  var cacheInfo = null;
+
+  function snapshot() {
+    if (!ov || !ov.width || !map) return;
+    if (cacheCv.width !== ov.width || cacheCv.height !== ov.height) {
+      cacheCv.width = ov.width;
+      cacheCv.height = ov.height;
+    }
+    cacheCtx = cacheCtx || cacheCv.getContext('2d');
+    cacheCtx.setTransform(1, 0, 0, 1, 0, 0);
+    cacheCtx.clearRect(0, 0, cacheCv.width, cacheCv.height);
+    cacheCtx.drawImage(ov, 0, 0);
+    var c = map.lngLatToContainer(SITE_LL);
+    cacheInfo = { cx: c.x, cy: c.y, z: map.getZoom() };
+  }
+
+  /* 平移/缩放过程中：把上一次的成品图按位移和缩放搬到新位置。
+     一次 drawImage，比重新描一万多个顶点快两个数量级。 */
+  function blit() {
+    if (!cacheInfo || !cacheCv.width || !ctx || !map) return;
+    var c = map.lngLatToContainer(SITE_LL);
+    var k = Math.pow(2, map.getZoom() - cacheInfo.z);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, ov.width, ov.height);
+    ctx.setTransform(k, 0, 0, k,
+                     c.x * DPR - k * cacheInfo.cx * DPR,
+                     c.y * DPR - k * cacheInfo.cy * DPR);
+    ctx.drawImage(cacheCv, 0, 0);
+  }
+
+  function dotAt(x, y, r, col) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+    ctx.stroke();
+  }
+
+  var lastNearOn = null;
+  var lastViewZoom = null;   /* 实景视点只在 500 m 档出现，记住上一次状态免得每帧刷 DOM */
+  /* 图例和图层开关都跟着当前档位走：
+       地块级（≤2 km）只列 绿地/水系/道路/地铁站/公交车站，
+       城市级（≥5 km）只列 所在区县/高速公路/高铁站/机场，
+       「交通分析圈」是特殊图层，两档都在。 */
+  function updateLegend(nearOn) {
+    if (nearOn === lastNearOn) return;
+    lastNearOn = nearOn;
+    var i, els;
+    els = document.querySelectorAll('#legend .lg-city, #layers .grp-city');
+    for (i = 0; i < els.length; i++) els[i].classList.toggle('hide', nearOn);
+    els = document.querySelectorAll('#legend .lg-near, #layers .grp-near');
+    for (i = 0; i < els.length; i++) els[i].classList.toggle('hide', !nearOn);
+  }
+
+  function poly(xy, close, strokeKey) {
+    if (xy.length < 6) return;
+    ctx.beginPath();
+    ctx.moveTo(xy[0], xy[1]);
+    for (var i = 2; i < xy.length; i += 2) ctx.lineTo(xy[i], xy[i + 1]);
+    if (close) ctx.closePath();
+    ctx.fill();
+    if (close && strokeKey) { setStroke(strokeKey); ctx.stroke(); }
+  }
+  function line(xy, g) {
+    if (xy.length < 4) return;
+    g = g || ctx;
+    g.beginPath();
+    g.moveTo(xy[0], xy[1]);
+    for (var i = 2; i < xy.length; i += 2) g.lineTo(xy[i], xy[i + 1]);
+    g.stroke();
+  }
+
+  function circlePoint(lng, lat, r, bearingDeg) {
+    var R = 6371008.8, br = bearingDeg * Math.PI / 180;
+    var la1 = lat * Math.PI / 180, lo1 = lng * Math.PI / 180, d = r / R;
+    var la2 = Math.asin(Math.sin(la1) * Math.cos(d) + Math.cos(la1) * Math.sin(d) * Math.cos(br));
+    var lo2 = lo1 + Math.atan2(Math.sin(br) * Math.sin(d) * Math.cos(la1),
+                               Math.cos(d) - Math.sin(la1) * Math.sin(la2));
+    return new AMap.LngLat(lo2 * 180 / Math.PI, la2 * 180 / Math.PI);
+  }
+
+  /* --- 名称标注：白色字 + 深色描边，任何底图上都读得出 --- */
+  var placed = [];
+  /* 文字块是否和已摆下的标签重叠 */
+  function placeOK(lx, ly, w, h) {
+    for (var i = 0; i < placed.length; i++) {
+      var p = placed[i];
+      if (lx < p[0] + p[2] && lx + w > p[0] && ly < p[1] + p[3] && ly + h > p[1]) return false;
+    }
+    return true;
+  }
+  function label(text, x, y, opt) {
+    opt = opt || {};
+    /* opt.k = 图层键：文字是否显示、颜色、字号都从配置里取（配置优先） */
+    if (opt.k) {
+      var lc = layerCfg(opt.k).label || {};
+      if (lc.show === false) return;
+      if (lc.size) opt.fs = lc.size;
+      if (lc.color) opt.color = lc.color;
+      if (lc.box && !opt.box) opt.box = lc.box;
+      if (lc.bold != null) opt.bold = lc.bold;
+    }
+    var fs = opt.fs || 11.5;
+    ctx.font = (opt.bold ? '600 ' : '') + fs + 'px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    var tw = ctx.measureText(text).width;
+    var w = tw + 8, h = fs + 6;
+    var lx = x + (opt.dx || 0), ly = y + (opt.dy || 0);
+    if (opt.anchor === 'center') { lx -= w / 2; }
+    ly -= h / 2;
+    if (opt.keep !== true) {
+      if (!placeOK(lx, ly, w, h)) {
+        /* force = 必须显示：上下各挪几档找空位，实在挤不下就叠着画。
+           地铁站名要求全出，宁可稍微挤，也不能悄悄少几个。 */
+        if (!opt.force) return;
+        for (var s1 = 1; s1 <= 8; s1++) {
+          if (placeOK(lx, ly + s1 * (h + 1), w, h)) { ly += s1 * (h + 1); break; }
+          if (placeOK(lx, ly - s1 * (h + 1), w, h)) { ly -= s1 * (h + 1); break; }
+        }
+      }
+    }
+    placed.push([lx, ly, w, h]);
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    if (opt.box) {
+      ctx.fillStyle = opt.box;
+      roundRect(lx, ly, w, h, 3);
+      ctx.fill();
+      ctx.fillStyle = opt.color || '#fff';
+    } else {
+      ctx.strokeStyle = 'rgba(12,17,26,0.82)';
+      ctx.lineWidth = 3.4;
+      ctx.strokeText(text, lx + 4, ly + h / 2);
+      ctx.fillStyle = opt.color || 'rgba(255,255,255,0.98)';
+    }
+    ctx.fillText(text, lx + 4, ly + h / 2);
+  }
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function labels(ox, oy, nearOn, cityOn) {
+   try {
+    placed = [];
+    var p0 = baseP0;
+    var vis0 = function (x, y) {
+      return x > -120 && y > -40 && x < window.innerWidth + 120 && y < window.innerHeight + 40;
+    };
+
+    /* ---------- 城市级：区县名 / 机场 / 火车站 / 高架高速 ---------- */
+    if (cityOn) {
+      /* 区县名：用轮廓质心（虹口区为单环，质心在区内） */
+      if (vis.district && CG.dist.length && CG.districtName) {
+        var big = CG.dist[0].c;
+        var q0 = map.lngLatToContainer(new AMap.LngLat(
+          SITE.lng + big[0] / KX, SITE.lat + big[1] / KY));
+        var x0 = q0.x - ox, y0 = q0.y - oy;
+        if (vis0(x0, y0)) {
+          label(CG.districtName, x0, y0, { k: 'district', anchor: 'center', dx: 0, dy: -30,
+            fs: 16, bold: true, color: '#fff8ee', keep: true });
+        }
+      }
+      /* 城市名（地市级地名 POI）：字号最大，压在区县名之上 */
+      if (CG.cityName && CG.cityName.name) {
+        var qc = map.lngLatToContainer(new AMap.LngLat(CG.cityName.lng, CG.cityName.lat));
+        var xc = qc.x - ox, yc = qc.y - oy;
+        if (vis0(xc, yc)) {
+          /* 找不到城市名 POI 坐标时（cityName.far）会被压在场地上，往上抬一点 */
+          label(CG.cityName.name, xc, yc, { k: 'cityName', anchor: 'center', dx: 0, dy: -52,
+            fs: 20, bold: true, color: 'rgba(255,255,255,0.94)', keep: true });
+        }
+      }
+      /* 机场（名称最抢眼，优先占位），高铁站随后 */
+      if (vis.air) {
+        PXc.air.forEach(function (t) {
+          if (!vis0(t.x, t.y)) return;
+          label(t.src.name, t.x, t.y, { k: 'air', dx: 10, dy: -1, fs: 12.5, bold: true,
+            color: '#c9f2ff', keep: true });
+        });
+      }
+      if (vis.rail) {
+        /* 高铁站：主站大字、小站小字 */
+        PXc.rail.forEach(function (t) {
+          if (!vis0(t.x, t.y)) return;
+          var main = t.src.lv === 'main';
+          label(t.src.name, t.x, t.y, { k: 'rail', dx: main ? 9 : 7, dy: -1,
+            fs: main ? 11.5 : 9.5, bold: main,
+            color: main ? '#e9dcff' : 'rgba(226,214,255,0.86)' });
+        });
+      }
+      /* 高架 / 高速名称：沿线路中点，白字深描边 */
+      if (vis.express) {
+        PXc.expLabels.forEach(function (t) {
+          if (!vis0(t.x, t.y)) return;
+          label(t.src.name, t.x, t.y, { k: 'express', anchor: 'center', fs: 10.5, bold: true,
+            color: '#ffe7bd' });
+        });
+      }
+    }
+
+    /* 水域名称：跟着「水系」开关；标注点由数据侧算好（多边形内部最宽处） */
+    if (vis.water) {
+      var wl0 = layerCfg('water'), wlab0 = wl0.label || {};
+      var wway0 = (wl0.way && wl0.way.label) || {};
+      if (wlab0.show !== false) (nearOn ? (L.waterNames || L.waterLabels || []) : []).forEach(function (w) {
+        var isWay = w.kind === 'way';
+        if (isWay && wway0.show === false) return;
+        var q = map.lngLatToContainer(new AMap.LngLat(w.lng, w.lat));
+        /* 不传 k：label() 里只要带 k 就会用 layers.water.label 覆盖字号/颜色，
+           河道名要用自己的一套（way.label 没有的项再继承水面） */
+        label(w.name, q.x - ox, q.y - oy, {
+          anchor: 'center', bold: true,
+          fs: isWay ? (wway0.size || wlab0.size || 12) : (wlab0.size || 13),
+          color: (isWay && wway0.color) ? wway0.color : (wlab0.color || '#eaf3ff'),
+          /* 河道名一律显示：它常常正好落在路口（河名和路名抢同一个位置），
+             按普通标签排布会被整条丢掉；稍微上移一点避开河心。 */
+          keep: true, dy: isWay ? -9 : 0
+        });
+      });
+    }
+
+    /* 道路名跟着「道路」；道路名只在 500m 视野标注。
+       绿地名只来自「公园」这一类（绿地面本身没有名字）；
+       绿地/景点 POI 的名字不再往图上写 —— 那一批是建筑、旧址、小广场，
+       一条街能冒出七八个，把画面糊满。 */
+    if (nearOn) {
+      if (vis.road && map.getZoom() >= Z_ROADNM) {
+        /* 每个路名只标一处（OSM 已经按街名合并了锚点），
+           且任意两个路名标签之间至少隔 46 px，免得叠成一片。 */
+        var seenRn = {}, placedRn = [];
+        PX.roadNames.forEach(function (t) {
+          var nm = t.src.name;
+          if (!nm || seenRn[nm]) return;
+          if (!vis0(t.x, t.y)) return;
+          /* 跳过由两个路名组合的路口名称。 */
+          if (/(大道|大街|公路|胡同|路|街|道|巷|弄).*(大道|大街|公路|胡同|路|街|道|巷|弄)/.test(nm)) return;
+          for (var q = 0; q < placedRn.length; q++) {
+            if (Math.hypot(placedRn[q].x - t.x, placedRn[q].y - t.y) < 46) return;
+          }
+          seenRn[nm] = 1;
+          placedRn.push({ x: t.x, y: t.y });
+          label(nm, t.x, t.y, { k: 'road', dx: 4, fs: 10.5, color: 'rgba(255,232,205,0.95)' });
+        });
+      }
+    }
+    /* 隐藏公交站名，避免密集的路口标签遮盖底图。 */
+
+    /* 配套名称：商业必须全部标（几个点不写名字，等于没说是什么商场），
+       其余三类取最近 3 个，否则行政 + 体育 + 公园加起来会糊满屏。 */
+    var AMEN_TC = { shop: '#ffd3e8', gov: '#d7d9ff', sport: '#ffd0d0', park: '#c9ffe9' };
+    ['shop', 'gov', 'sport', 'park'].forEach(function (k) {
+      if ((k === 'park' ? !vis.green : !vis[k]) || !nearOn) return;
+      var arr = PX.amen[k];
+      if (!arr || !arr.length) return;
+      var lst = arr.slice().sort(function (a, b) { return (a.src.d || 0) - (b.src.d || 0); });
+      if (k !== 'shop') lst = lst.slice(0, 3);
+      lst.forEach(function (t) {
+        if (!vis0(t.x, t.y)) return;
+        label(t.src.name, t.x, t.y, { k: k, dx: 6, dy: -1, fs: k === 'shop' ? 10 : 9.5, color: AMEN_TC[k] });
+      });
+    });
+
+    /* 地铁站名称：视野内全部标出，不按距离截断。
+       点画了、名字没有，看着就像漏了；挤的时候向下/向上错开，不隐藏。 */
+    if (vis.metro && nearOn && CG.metro.length) {
+      CG.metro.forEach(function (t) {
+        var q = map.lngLatToContainer(new AMap.LngLat(t.lng, t.lat));
+        var x = q.x - ox, y = q.y - oy;
+        if (!vis0(x, y)) return;
+        label(t.name, x, y, { k: 'metro', dx: 7, dy: -1, fs: 9.5,
+          color: 'rgba(190,214,255,0.95)', force: true });
+      });
+    }
+
+    /* 分析圈半径：每个圈换一个角度，避免标签叠在一起 */
+    if (vis.ring) RINGS.forEach(function (g, gi) {
+      if (!g._on || !g._r || g._r < 80) return;
+      var q = map.lngLatToContainer(circlePoint(SITE.lng, SITE.lat, g.r, 68 + gi * 26));
+      var x = q.x - ox, y = q.y - oy;
+      if (!vis0(x, y)) return;
+      label(g.t, x, y, { k: 'ring', anchor: 'center', fs: 11, bold: true, color: '#ffd7d7', keep: true });
+    });
+
+    /* 项目名称 */
+    if (p0) {
+      /* 固定写"项目基地"：逆地理出来的名字（"德邻购物中心德邻公寓旧址"）
+         又长又不一定是要分析的地块，图面上没有意义。 */
+      var plc = layerCfg('project').label || {};
+      label(plc.text || '项目基地', p0.x, p0.y, { k: 'project', dx: 11, dy: -12, fs: 13, bold: true,
+        box: 'rgba(220,38,38,0.95)', color: '#fff', keep: true });
+    }
+   } catch (e) { window.__lastErr = (e && e.message) + ' | ' + ((e && e.stack) || '').slice(0, 260); }
+  }
+
+  /* ================= 视野 ================= */
+  function fitRadius(r) {
+    if (!map) return;
+    var w = window.innerWidth, h = window.innerHeight;
+    var target = Math.min(w, h) * 0.44;         /* 圈半径占屏幕短边的 44% */
+    /* 直接按 Web 墨卡托公式反解 zoom：156543.03392·cosφ / 2^z = 米/像素。
+       不用 setZoomAndCenter 后再测量 —— 那个 API 是异步生效的，
+       连续点几档之后会拿旧级别去标定，视野越算越偏。 */
+    var mpp = r / Math.max(target, 1);
+    var z = Math.log(156543.03392 * Math.cos(SITE.lat * Math.PI / 180) / mpp) / Math.LN2;
+    z = Math.max(3.2, Math.min(19, z));
+    /* 第三参数 immediate=true：否则 3D 模式下的缩放动画要好几秒，
+       截图/切换时经常停在中间级别，视野对不上。 */
+    map.setZoomAndCenter(z, [SITE.lng, SITE.lat], true);
+    lastZ = null;
+    setTimeout(function () { project(); draw(false); }, 420);
+  }
+
+
+  /* ================= 任意经纬度重建 ================= */
+  var building = false;
+  /* 默认坐标在页面打开时就会自动构建（20~30 s），这期间点"定位"如果直接
+     return，用户会以为按钮失效。改成排队：构建一结束就自动跑新坐标。 */
+  var pendingLoc = null;
+  var expToken = 0;
+  var roadToken = 0;
+
+  /* 街道升级：OSM 矢量到达后整体替换瓦片骨架。
+     和高速一样是"先给一版、到了再换"，不挡首帧。 */
+  function applyRoads(list, names) {
+    if (!list || list.length < 60) return false;
+    L.roadLines = list;
+    L.roadNames = (names && names.length) ? names : [];
+    var rlen = buildRoadLayer();
+    GEO.roadNames = [];
+    (L.roadNames || []).forEach(function (t) {
+      GEO.roadNames.push({ p: new AMap.LngLat(t.lng, t.lat), name: t.name });
+    });
+    var ctr = $('ct-road');
+    if (ctr) ctr.textContent = (rlen / 1000).toFixed(1) + ' km';
+    project();
+    draw(false);
+    return true;
+  }
+
+  function tip(msg, cls) {
+    var el = $('loc-tip');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'loc-tip' + (cls ? ' ' + cls : '');
+  }
+
+  function syncInputs() {
+    if ($('in-lng')) $('in-lng').value = SITE.lng.toFixed(6);
+    if ($('in-lat')) $('in-lat').value = SITE.lat.toFixed(6);
+  }
+
+  /* 从逆地理全名中提取项目标注，避免重复显示行政区名。 */
+  function shortName(addr) {
+    if (!addr) return '';
+    var m = /(?:街道|镇|乡|苏木)(.+)$/.exec(addr);
+    if (m && m[1].length >= 2 && m[1].length <= 12) return m[1];
+    var parts = addr.split(/[省市区县]/).filter(Boolean);
+    var last = parts.length ? parts[parts.length - 1] : '';
+    return (last.length >= 2 && last.length <= 12) ? last : '';
+  }
+
+  function resetData() {
+    GEO = { green: [], water: [], waterways: [], roadA: [], roadAB: [], roadL: [],
+            transit: [], pois: [], roadNames: [],
+            amen: { shop: [], gov: [], sport: [], park: [] } };
+    CG = { dist: [], exp: [], expB: [], districtName: '', rail: [], air: [], metro: [], expLabels: [], cityName: null };
+    PXc = { rail: [], air: [], metro: [], expLabels: [] };
+    PX = { green: [], water: [], waterways: [], roadA: [], transit: [], pois: [], roadNames: [],
+           amen: { shop: [], gov: [], sport: [], park: [] } };
+    placed = [];
+  }
+
+  function doLocate() {
+    var lng = parseFloat((($('in-lng') || {}).value || '').trim());
+    var lat = parseFloat((($('in-lat') || {}).value || '').trim());
+    if (!isFinite(lng) || !isFinite(lat) || Math.abs(lng) > 180 || Math.abs(lat) > 85) {
+      tip('经纬度不合法：经度 -180~180，纬度 -85~85', 'err');
+      return;
+    }
+    if (building) {
+      pendingLoc = [lng, lat];
+      tip('正在读取上一处，完成后自动定位到 ' + lng.toFixed(4) + ', ' + lat.toFixed(4));
+      return;
+    }
+    rebuild(lng, lat);
+  }
+
+  /* 载入遮罩：一次性把周边数据全算完、画好，再交还操作权。
+     中途不接受拖动缩放，避免边算边重绘互相抢主线程。 */
+  function showLoading(main, sub) {
+    var el = $('loading');
+    if (!el) return;
+    if (main != null) $('loading-main').textContent = main;
+    $('loading-sub').textContent = sub || '';
+    el.classList.remove('hide');
+  }
+  function setLoadingSub(sub) {
+    var el = $('loading-sub');
+    if (el) el.textContent = sub || '';
+  }
+  function hideLoading() {
+    var el = $('loading');
+    if (el) el.classList.add('hide');
+  }
+
+  function rebuild(lng, lat) {
+    if (building) return;
+    building = true;
+    roadToken++;                     /* 作废上一处还没回来的街道升级包 */
+    var btn = $('btn-go');
+    if (btn) { btn.classList.add('busy'); btn.textContent = '读取中'; }
+    var t0 = Date.now();
+    showLoading('正在读取 ' + lng.toFixed(4) + ', ' + lat.toFixed(4), '准备中…');
+
+    window.__sbLog = [];
+    var job;
+    try {
+      job = SiteBuilder.build({ lng: lng, lat: lat }, function (msg) {
+        tip(msg);
+        setLoadingSub(msg);
+        window.__sbLog.push(((Date.now() - t0) / 1000).toFixed(1) + 's  ' + msg);
+      });
+    } catch (e) {
+      hideLoading();
+      building = false;
+      if (btn) { btn.classList.remove('busy'); btn.textContent = '定位'; }
+      tip('构建器未就绪：' + (e && e.message ? e.message : e), 'err');
+      return;
+    }
+    job
+      .then(function (res) {
+        setLoadingSub('绘制图层…');
+        SITE.lng = lng; SITE.lat = lat;
+        /* 地址/名称必须整体替换，不能只在拿到新值时才覆盖 ——
+           逆地理偶尔失败，留着上一个场地的地址会张冠李戴。 */
+        SITE.address = res.meta.addr || '';
+        SITE.name = shortName(res.meta.addr) || '所选场地';
+        recalcK();
+
+        L = res.L;
+        CITY = res.C;
+
+        window.__lastBuild = res;
+        resetData();
+        syncInputs();
+
+        var tt = $('title');
+        if (tt) tt.textContent = '周边场地分析';
+        $('addr').textContent = SITE.address || '';
+        $('coord').innerHTML = 'GCJ-02 <b>' + lng.toFixed(6) + ', ' + lat.toFixed(6) + '</b>';
+
+        prepare();
+        fitRadius((CFG2.view && CFG2.view.initial) || 500);
+
+        /* 等地图把视野稳定下来，再一次性投影 + 全量绘制 + 存位图缓存 */
+        return new Promise(function (done) {
+          setTimeout(function () {
+            project();
+            draw(false);
+            done();
+          }, 480);
+        }).then(function () {
+          var nd = (res.L.roadLines || []).length;
+          var sec = ((Date.now() - t0) / 1000).toFixed(1);
+          tip('已载入 · 道路 ' + nd + ' 段 · 用时 ' + sec + ' s', 'ok');
+
+          /* 首帧用的是瓦片骨架（OSM 6 s 内没回），矢量一到就整体换掉：
+             整条街一条线、不断口，名字也换成了 OSM 的正式路名。 */
+          if (res.R) {
+            var rtk = roadToken;
+            res.R.then(function (r) {
+              if (rtk !== roadToken || !r || !r.lines || !r.lines.length) return;
+              if (applyRoads(r.lines, r.names)) {
+                tip('已载入 · 道路 ' + L.roadLines.length + ' 段（OSM 矢量）· 用时 ' +
+                  ((Date.now() - t0) / 1000).toFixed(1) + ' s', 'ok');
+              }
+            });
+          }
+
+          /* 高速：查询在 build() 一开头就发出去了（和街道/POI 并行），
+             这里只负责接住结果整体替换栅格骨架。
+             没有任何预置或缓存 —— 换到任何坐标都是现查，等多久取决于当地路网密度。 */
+          var etk = ++expToken;
+          var cx = $('ct-exp');
+          var expWait = setTimeout(function () {
+            if (etk === expToken) updateExpCount();   /* 等太久先把骨架数字放出来 */
+          }, 120000);
+          if (res.E) {
+            if (cx) cx.textContent = '读取中';
+            res.E.then(function (list) {
+              if (etk !== expToken) return;
+              clearTimeout(expWait);
+              if (list && list.length) {
+                /* applyExpress 内部已经 updateExpCount()，这里不用再写数字 */
+                applyExpress(list);
+              } else {
+                updateExpCount();          /* 取不到就保留栅格骨架那版 */
+              }
+            });
+          } else {
+            clearTimeout(expWait);
+          }
+
+
+        });
+      })
+      .catch(function (e) {
+        window.__buildErr = (e && e.stack) ? e.stack : String(e);
+        tip('读取失败：' + (e && e.message ? e.message : e), 'err');
+      })
+      .then(function () {
+        building = false;
+        hideLoading();
+        if (btn) { btn.classList.remove('busy'); btn.textContent = '定位'; }
+        if (pendingLoc) {
+          var nx = pendingLoc[0], ny = pendingLoc[1];
+          pendingLoc = null;
+          rebuild(nx, ny);
+        }
+      });
+  }
+
+  function initLoc() {
+    syncInputs();
+    var go = $('btn-go');
+    if (go) go.addEventListener('click', doLocate, false);
+    ['in-lng', 'in-lat'].forEach(function (id) {
+      var el = $(id);
+      if (el) el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); doLocate(); }
+      }, false);
+    });
+  }
+
+  /* ================= UI ================= */
+  /* 视野档位：按钮由配置生成，改 site.config.json 的 view.options 就换档 */
+  function buildFitButtons() {
+    var row = document.querySelector('#panel .row2.fit');
+    if (!row) return;
+    var opts = (CFG2.view && CFG2.view.options) || [500, 2000, 5000, 15000, 30000];
+    var cur = (CFG2.view && CFG2.view.initial) || opts[0];
+    row.innerHTML = '';
+    opts.forEach(function (r) {
+      var d = document.createElement('div');
+      d.className = 'btn' + (r === cur ? ' on' : '');
+      d.setAttribute('data-fit', String(r));
+      d.textContent = r >= 1000 ? (r / 1000) + ' km' : r + ' m';
+      row.appendChild(d);
+    });
+  }
+  /* 图例色块：颜色从配置来，改了图层颜色图例跟着变。
+     色块太小，透明度抬到 0.55 以上才看得见，不改配置本身的透明度。 */
+  function syncLegendColors() {
+    Array.prototype.forEach.call(document.querySelectorAll('#legend .mk[data-k]'), function (el) {
+      var k = el.getAttribute('data-k'), role = el.getAttribute('data-role') || 'fill';
+      var c = layerCfg(k), col;
+      if (role === 'line') {
+        var core = c.core || c.stroke || {};
+        col = rgbaOf(core.color, Math.max(core.opacity == null ? 1 : core.opacity, 0.9));
+        el.style.borderTop = '3px solid ' + col;
+      } else if (role === 'stroke') {
+        var st = c.stroke || {};
+        el.style.background = rgbaOf(st.color, Math.max(st.opacity == null ? 1 : st.opacity, 0.9));
+      } else {
+        var f = c.fill || {};
+        el.style.background = rgbaOf(f.color, Math.max(f.opacity == null ? 1 : f.opacity, 0.55));
+      }
+    });
+  }
+
+  /* 图层开关的初始状态：把 vis 回写到开关的样式上 */
+  function syncSwitches() {
+    Array.prototype.forEach.call(document.querySelectorAll('#layers .sw[data-k]'), function (el) {
+      var k = el.getAttribute('data-k');
+      if (!(k in vis)) return;
+      el.classList.toggle('on', !!vis[k]);
+      el.classList.toggle('off', !vis[k]);
+    });
+  }
+
+  function bindUI() {
+    ['layers'].forEach(function (id) {
+      var box = $(id);
+      if (!box) return;
+      box.addEventListener('click', function (e) {
+        var el = e.target;
+        while (el && el !== box && !(el.classList && el.classList.contains('sw'))) el = el.parentNode;
+        if (!el || el === box) return;
+        var k = el.getAttribute('data-k');
+        vis[k] = !vis[k];
+        el.classList.toggle('on', vis[k]);
+        el.classList.toggle('off', !vis[k]);
+        draw(false);
+      }, false);
+    });
+
+    var graySw = $('gray-sw');
+    paintSw(graySw, gray.on);
+    graySw.addEventListener('click', function () {
+      gray.on = !gray.on;
+      paintSw(graySw, gray.on);
+      applyGray();
+    }, false);
+
+    Array.prototype.forEach.call(document.querySelectorAll('.btn[data-bm]'), function (b) {
+      b.addEventListener('click', function () {
+        Array.prototype.forEach.call(document.querySelectorAll('.btn[data-bm]'), function (x) {
+          x.classList.toggle('on', x === b);
+        });
+        setBase(b.getAttribute('data-bm'));
+      });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('.btn[data-fit]'), function (b) {
+      b.addEventListener('click', function () {
+        Array.prototype.forEach.call(document.querySelectorAll('.btn[data-fit]'), function (x) {
+          x.classList.toggle('on', x === b);
+        });
+        fitRadius(Number(b.getAttribute('data-fit')));
+      });
+    });
+
+    var ut = $('ui-toggle');
+    if (ut) ut.addEventListener('click', function () { applyUI(!uiOn); }, false);
+
+    applyGray();
+  }
+
+  var gray = { on: !!(CFG2.basemap && CFG2.basemap.gray) };
+
+  function paintSw(el, on) {
+    el.classList.toggle('on', on);
+    el.classList.toggle('off', !on);
+  }
+  function applyGray() {
+    $('map').classList.toggle('gray', gray.on && baseMode === 'satellite');
+  }
+
+  var baseMode = (CFG2.basemap && CFG2.basemap.type) || 'satellite';
+  var vectorLayer = null;
+  function syncBaseButtons() {
+    Array.prototype.forEach.call(document.querySelectorAll('.btn[data-bm]'), function (b) {
+      b.classList.toggle('on', b.getAttribute('data-bm') === baseMode);
+    });
+  }
+  function setBase(mode) {
+    baseMode = mode;
+    syncBaseButtons();
+    try {
+      var ls = (map.getLayers ? map.getLayers() : null) || [];
+      for (var i = 0; i < ls.length; i++) {
+        var n = ls[i].CLASS_NAME || '';
+        if (/Satellite/.test(n)) {
+          mode === 'satellite' ? ls[i].show() : ls[i].hide();
+        } else if (/VectorLayer|TileLayer/.test(n)) {
+          /* 高德默认矢量底图会画白色底，卫星模式下必须关掉 */
+          mode === 'satellite' ? ls[i].hide() : ls[i].show();
+        }
+      }
+      if (satellite) { mode === 'satellite' ? satellite.show() : satellite.hide(); }
+      if (mode === 'vector') map.setFeatures(['bg', 'road']);
+      else map.setFeatures([]);
+    } catch (e) { showHint('底图切换失败：' + e.message, 5000); }
+    applyGray();
+  }
+})();
+</script>
+</body>
+</html>

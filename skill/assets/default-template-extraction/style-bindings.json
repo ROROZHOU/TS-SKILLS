@@ -1,0 +1,3046 @@
+{
+  "template_sha256": "0a0bc682bfc9c29c674c827f83463e0dc72132f0150141b40b55940afc8b68b5",
+  "basemapStyles": { "2":"grayscale", "3":"grayscale", "4":"grayscale", "5":"grayscale", "6":"grayscale", "7":"grayscale", "8":"grayscale" },
+  "bindings": [
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "91"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "91"
+        },
+        "text": {
+          "page": 6,
+          "id": "69"
+        },
+        "background": {
+          "page": 6,
+          "id": "69"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "water",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "92"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "92"
+        },
+        "text": {
+          "page": 6,
+          "id": "71"
+        },
+        "background": {
+          "page": 6,
+          "id": "71"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "83"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "shop",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "45"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "45"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "gov",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "33"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "33"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "park",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "49"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "district",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "67"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "67"
+        },
+        "text": {
+          "page": 2,
+          "id": "63"
+        },
+        "background": {
+          "page": 2,
+          "id": "63"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "express",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 3,
+          "id": "5"
+        },
+        "stroke": {
+          "page": 3,
+          "id": "5"
+        },
+        "text": {
+          "page": 3,
+          "id": "34"
+        },
+        "background": {
+          "page": 3,
+          "id": "34"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "ring",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "55"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "55"
+        },
+        "text": {
+          "page": 2,
+          "id": "57"
+        },
+        "background": {
+          "page": 2,
+          "id": "57"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "view",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 8,
+          "id": "26"
+        },
+        "stroke": {
+          "page": 8,
+          "id": "26"
+        },
+        "text": {
+          "page": 8,
+          "id": "26"
+        },
+        "background": {
+          "page": 8,
+          "id": "26"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "planning",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "96"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "96"
+        },
+        "text": {
+          "page": 7,
+          "id": "126"
+        },
+        "background": {
+          "page": 7,
+          "id": "126"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "rail",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "39"
+        },
+        "background": {
+          "page": 2,
+          "id": "39"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "air",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "50"
+        },
+        "background": {
+          "page": 2,
+          "id": "50"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "project",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "49"
+        },
+        "text": {
+          "page": 2,
+          "id": "47"
+        },
+        "background": {
+          "page": 2,
+          "id": "47"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 0
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "21"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 1
+    },
+    {
+      "page": 2,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "17"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 2
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "91"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "91"
+        },
+        "text": {
+          "page": 6,
+          "id": "69"
+        },
+        "background": {
+          "page": 6,
+          "id": "69"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "water",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "92"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "92"
+        },
+        "text": {
+          "page": 6,
+          "id": "71"
+        },
+        "background": {
+          "page": 6,
+          "id": "71"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "83"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "shop",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "45"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "45"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "gov",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "33"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "33"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "park",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "49"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "district",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "67"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "67"
+        },
+        "text": {
+          "page": 2,
+          "id": "63"
+        },
+        "background": {
+          "page": 2,
+          "id": "63"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "express",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 3,
+          "id": "5"
+        },
+        "stroke": {
+          "page": 3,
+          "id": "5"
+        },
+        "text": {
+          "page": 3,
+          "id": "34"
+        },
+        "background": {
+          "page": 3,
+          "id": "34"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "ring",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "55"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "55"
+        },
+        "text": {
+          "page": 2,
+          "id": "57"
+        },
+        "background": {
+          "page": 2,
+          "id": "57"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "view",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 8,
+          "id": "26"
+        },
+        "stroke": {
+          "page": 8,
+          "id": "26"
+        },
+        "text": {
+          "page": 8,
+          "id": "26"
+        },
+        "background": {
+          "page": 8,
+          "id": "26"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "planning",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "96"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "96"
+        },
+        "text": {
+          "page": 7,
+          "id": "126"
+        },
+        "background": {
+          "page": 7,
+          "id": "126"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "rail",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "39"
+        },
+        "background": {
+          "page": 2,
+          "id": "39"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "air",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "50"
+        },
+        "background": {
+          "page": 2,
+          "id": "50"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "project",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "49"
+        },
+        "text": {
+          "page": 2,
+          "id": "47"
+        },
+        "background": {
+          "page": 2,
+          "id": "47"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 0
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "21"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 1
+    },
+    {
+      "page": 3,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "17"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 2
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "91"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "91"
+        },
+        "text": {
+          "page": 6,
+          "id": "69"
+        },
+        "background": {
+          "page": 6,
+          "id": "69"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "water",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "92"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "92"
+        },
+        "text": {
+          "page": 6,
+          "id": "71"
+        },
+        "background": {
+          "page": 6,
+          "id": "71"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "83"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "shop",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "45"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "45"
+        },
+        "text": {
+          "page": 4,
+          "id": "63"
+        },
+        "background": {
+          "page": 4,
+          "id": "63"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "gov",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "33"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "33"
+        },
+        "text": {
+          "page": 4,
+          "id": "36"
+        },
+        "background": {
+          "page": 4,
+          "id": "36"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "park",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "49"
+        },
+        "text": {
+          "page": 4,
+          "id": "29"
+        },
+        "background": {
+          "page": 4,
+          "id": "29"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "district",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "67"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "67"
+        },
+        "text": {
+          "page": 2,
+          "id": "63"
+        },
+        "background": {
+          "page": 2,
+          "id": "63"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "express",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 3,
+          "id": "5"
+        },
+        "stroke": {
+          "page": 3,
+          "id": "5"
+        },
+        "text": {
+          "page": 3,
+          "id": "34"
+        },
+        "background": {
+          "page": 3,
+          "id": "34"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "ring",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "55"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "55"
+        },
+        "text": {
+          "page": 2,
+          "id": "57"
+        },
+        "background": {
+          "page": 2,
+          "id": "57"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "view",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 8,
+          "id": "26"
+        },
+        "stroke": {
+          "page": 8,
+          "id": "26"
+        },
+        "text": {
+          "page": 8,
+          "id": "26"
+        },
+        "background": {
+          "page": 8,
+          "id": "26"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "planning",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "96"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "96"
+        },
+        "text": {
+          "page": 7,
+          "id": "126"
+        },
+        "background": {
+          "page": 7,
+          "id": "126"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "rail",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "39"
+        },
+        "background": {
+          "page": 2,
+          "id": "39"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "air",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "50"
+        },
+        "background": {
+          "page": 2,
+          "id": "50"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "project",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "49"
+        },
+        "text": {
+          "page": 2,
+          "id": "47"
+        },
+        "background": {
+          "page": 2,
+          "id": "47"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "parcel",
+      "layer": "parcel",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "15"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "15"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 0
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "21"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 1
+    },
+    {
+      "page": 4,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "17"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 2
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "91"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "91"
+        },
+        "text": {
+          "page": 6,
+          "id": "69"
+        },
+        "background": {
+          "page": 6,
+          "id": "69"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "water",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "92"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "92"
+        },
+        "text": {
+          "page": 6,
+          "id": "71"
+        },
+        "background": {
+          "page": 6,
+          "id": "71"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "83"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "shop",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "45"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "45"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "gov",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "33"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "33"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "park",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "49"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "district",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "67"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "67"
+        },
+        "text": {
+          "page": 2,
+          "id": "63"
+        },
+        "background": {
+          "page": 2,
+          "id": "63"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "express",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 3,
+          "id": "5"
+        },
+        "stroke": {
+          "page": 3,
+          "id": "5"
+        },
+        "text": {
+          "page": 3,
+          "id": "34"
+        },
+        "background": {
+          "page": 3,
+          "id": "34"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "ring",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "55"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "55"
+        },
+        "text": {
+          "page": 2,
+          "id": "57"
+        },
+        "background": {
+          "page": 2,
+          "id": "57"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "view",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 8,
+          "id": "26"
+        },
+        "stroke": {
+          "page": 8,
+          "id": "26"
+        },
+        "text": {
+          "page": 8,
+          "id": "26"
+        },
+        "background": {
+          "page": 8,
+          "id": "26"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "planning",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "96"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "96"
+        },
+        "text": {
+          "page": 7,
+          "id": "126"
+        },
+        "background": {
+          "page": 7,
+          "id": "126"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "rail",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "39"
+        },
+        "background": {
+          "page": 2,
+          "id": "39"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "air",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "50"
+        },
+        "background": {
+          "page": 2,
+          "id": "50"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "project",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "49"
+        },
+        "text": {
+          "page": 2,
+          "id": "47"
+        },
+        "background": {
+          "page": 2,
+          "id": "47"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "parcel",
+      "layer": "parcel",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "15"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "15"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 0
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "21"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 1
+    },
+    {
+      "page": 5,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "17"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 2
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "91"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "91"
+        },
+        "text": {
+          "page": 6,
+          "id": "69"
+        },
+        "background": {
+          "page": 6,
+          "id": "69"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "water",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "92"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "92"
+        },
+        "text": {
+          "page": 6,
+          "id": "71"
+        },
+        "background": {
+          "page": 6,
+          "id": "71"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "83"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "shop",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "45"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "45"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "gov",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "33"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "33"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "park",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "49"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "district",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "67"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "67"
+        },
+        "text": {
+          "page": 2,
+          "id": "63"
+        },
+        "background": {
+          "page": 2,
+          "id": "63"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "express",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 3,
+          "id": "5"
+        },
+        "stroke": {
+          "page": 3,
+          "id": "5"
+        },
+        "text": {
+          "page": 3,
+          "id": "34"
+        },
+        "background": {
+          "page": 3,
+          "id": "34"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "ring",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "55"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "55"
+        },
+        "text": {
+          "page": 2,
+          "id": "57"
+        },
+        "background": {
+          "page": 2,
+          "id": "57"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "view",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 8,
+          "id": "26"
+        },
+        "stroke": {
+          "page": 8,
+          "id": "26"
+        },
+        "text": {
+          "page": 8,
+          "id": "26"
+        },
+        "background": {
+          "page": 8,
+          "id": "26"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "planning",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "96"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "96"
+        },
+        "text": {
+          "page": 7,
+          "id": "126"
+        },
+        "background": {
+          "page": 7,
+          "id": "126"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "rail",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "39"
+        },
+        "background": {
+          "page": 2,
+          "id": "39"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "air",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "50"
+        },
+        "background": {
+          "page": 2,
+          "id": "50"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "project",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "49"
+        },
+        "text": {
+          "page": 2,
+          "id": "47"
+        },
+        "background": {
+          "page": 2,
+          "id": "47"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "parcel",
+      "layer": "parcel",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "85"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "85"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 0
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "21"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 1
+    },
+    {
+      "page": 6,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "17"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 2
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "91"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "91"
+        },
+        "text": {
+          "page": 6,
+          "id": "69"
+        },
+        "background": {
+          "page": 6,
+          "id": "69"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "water",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "92"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "92"
+        },
+        "text": {
+          "page": 6,
+          "id": "71"
+        },
+        "background": {
+          "page": 6,
+          "id": "71"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "83"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "shop",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "45"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "45"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "gov",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "33"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "33"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "park",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "49"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "district",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "67"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "67"
+        },
+        "text": {
+          "page": 2,
+          "id": "63"
+        },
+        "background": {
+          "page": 2,
+          "id": "63"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "express",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 3,
+          "id": "5"
+        },
+        "stroke": {
+          "page": 3,
+          "id": "5"
+        },
+        "text": {
+          "page": 3,
+          "id": "34"
+        },
+        "background": {
+          "page": 3,
+          "id": "34"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "ring",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "55"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "55"
+        },
+        "text": {
+          "page": 2,
+          "id": "57"
+        },
+        "background": {
+          "page": 2,
+          "id": "57"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "view",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 8,
+          "id": "26"
+        },
+        "stroke": {
+          "page": 8,
+          "id": "26"
+        },
+        "text": {
+          "page": 8,
+          "id": "26"
+        },
+        "background": {
+          "page": 8,
+          "id": "26"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "planning",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "96"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "96"
+        },
+        "text": {
+          "page": 7,
+          "id": "126"
+        },
+        "background": {
+          "page": 7,
+          "id": "126"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "rail",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "39"
+        },
+        "background": {
+          "page": 2,
+          "id": "39"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "air",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "50"
+        },
+        "background": {
+          "page": 2,
+          "id": "50"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "project",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "49"
+        },
+        "text": {
+          "page": 2,
+          "id": "47"
+        },
+        "background": {
+          "page": 2,
+          "id": "47"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "parcel",
+      "layer": "parcel",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "106"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "106"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 2.6,
+      "variant": 0
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "21"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 2.6,
+      "variant": 1
+    },
+    {
+      "page": 7,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "17"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 2.6,
+      "variant": 2
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "91"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "91"
+        },
+        "text": {
+          "page": 6,
+          "id": "69"
+        },
+        "background": {
+          "page": 6,
+          "id": "69"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "water",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 6,
+          "id": "92"
+        },
+        "stroke": {
+          "page": 6,
+          "id": "92"
+        },
+        "text": {
+          "page": 6,
+          "id": "71"
+        },
+        "background": {
+          "page": 6,
+          "id": "71"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 5,
+          "id": "83"
+        },
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "shop",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "45"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "45"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "gov",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "33"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "33"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "park",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 4,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 4,
+          "id": "49"
+        },
+        "text": {
+          "page": 4,
+          "id": "37"
+        },
+        "background": {
+          "page": 4,
+          "id": "37"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "district",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "67"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "67"
+        },
+        "text": {
+          "page": 2,
+          "id": "63"
+        },
+        "background": {
+          "page": 2,
+          "id": "63"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "express",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 3,
+          "id": "5"
+        },
+        "stroke": {
+          "page": 3,
+          "id": "5"
+        },
+        "text": {
+          "page": 3,
+          "id": "34"
+        },
+        "background": {
+          "page": 3,
+          "id": "34"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "ring",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "55"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "55"
+        },
+        "text": {
+          "page": 2,
+          "id": "57"
+        },
+        "background": {
+          "page": 2,
+          "id": "57"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "view",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 8,
+          "id": "26"
+        },
+        "stroke": {
+          "page": 8,
+          "id": "26"
+        },
+        "text": {
+          "page": 8,
+          "id": "26"
+        },
+        "background": {
+          "page": 8,
+          "id": "26"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "planning",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "96"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "96"
+        },
+        "text": {
+          "page": 7,
+          "id": "126"
+        },
+        "background": {
+          "page": 7,
+          "id": "126"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "rail",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "39"
+        },
+        "background": {
+          "page": 2,
+          "id": "39"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "air",
+      "geometry": "point",
+      "style_refs": {
+        "text": {
+          "page": 2,
+          "id": "50"
+        },
+        "background": {
+          "page": 2,
+          "id": "50"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "project",
+      "geometry": "point",
+      "style_refs": {
+        "fill": {
+          "page": 2,
+          "id": "49"
+        },
+        "stroke": {
+          "page": 2,
+          "id": "49"
+        },
+        "text": {
+          "page": 2,
+          "id": "47"
+        },
+        "background": {
+          "page": 2,
+          "id": "47"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "parcel",
+      "layer": "parcel",
+      "geometry": "line",
+      "style_refs": {
+        "fill": {
+          "page": 8,
+          "id": "24"
+        },
+        "stroke": {
+          "page": 8,
+          "id": "24"
+        }
+      },
+      "css_to_ppt_scale": 1.3
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "83"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 0
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "21"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 1
+    },
+    {
+      "page": 8,
+      "target": "layer",
+      "layer": "road",
+      "geometry": "line",
+      "style_refs": {
+        "stroke": {
+          "page": 5,
+          "id": "17"
+        },
+        "text": {
+          "page": 5,
+          "id": "84"
+        },
+        "background": {
+          "page": 5,
+          "id": "84"
+        }
+      },
+      "css_to_ppt_scale": 1.3,
+      "variant": 2
+    },
+    {
+      "page": 7,
+      "target": "resource_style",
+      "layer": "residential",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "96"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "96"
+        },
+        "text": {
+          "page": 7,
+          "id": "126"
+        },
+        "background": {
+          "page": 7,
+          "id": "126"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "resource_style",
+      "layer": "commercial",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "95"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "95"
+        },
+        "text": {
+          "page": 7,
+          "id": "127"
+        },
+        "background": {
+          "page": 7,
+          "id": "127"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "resource_style",
+      "layer": "urban-green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "91"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "91"
+        },
+        "text": {
+          "page": 7,
+          "id": "128"
+        },
+        "background": {
+          "page": 7,
+          "id": "128"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "resource_style",
+      "layer": "park-green",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "85"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "85"
+        },
+        "text": {
+          "page": 7,
+          "id": "131"
+        },
+        "background": {
+          "page": 7,
+          "id": "131"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "resource_style",
+      "layer": "religious",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "99"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "99"
+        },
+        "text": {
+          "page": 7,
+          "id": "129"
+        },
+        "background": {
+          "page": 7,
+          "id": "129"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    },
+    {
+      "page": 7,
+      "target": "resource_style",
+      "layer": "flood-control",
+      "geometry": "polygon",
+      "style_refs": {
+        "fill": {
+          "page": 7,
+          "id": "90"
+        },
+        "stroke": {
+          "page": 7,
+          "id": "90"
+        },
+        "text": {
+          "page": 7,
+          "id": "130"
+        },
+        "background": {
+          "page": 7,
+          "id": "130"
+        }
+      },
+      "css_to_ppt_scale": 2.6
+    }
+  ],
+  "review_notes": [
+    "交通枢纽图标属于模板图像，配置只提取其文字样式；图标需复用模板资源，不能把网页缺省点色声称为模板色",
+    "P4红线轮廓参照同模板基地交通页；当前页本身只提供基地点符号",
+    "视野与裁切为已有测试设置，新项目需审核"
+  ]
+}

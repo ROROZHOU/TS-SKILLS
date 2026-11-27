@@ -1,0 +1,421 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://local/site.config.schema.json",
+  "title": "周边场地分析 · site.config.json",
+  "description": "项目地图配置。由本机 MCP 地图工具读取，凭据由宿主提供。省略的可选显示字段使用模板默认值。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["project"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "指向本 schema，供编辑器做补全与校验，运行时忽略。"
+    },
+    "_说明": {
+      "type": "array",
+      "description": "给人看的注释，运行时忽略；建议把数据源优先级也写在这里。",
+      "items": { "type": "string" }
+    },
+    "project": {
+      "type": "object",
+      "description": "草稿可同时留空经纬度。采集前填入一对已经核实的数值坐标，数据按该位置获取。",
+      "additionalProperties": false,
+      "required": ["coord"],
+      "dependencies": { "lng": ["lat"], "lat": ["lng"] },
+      "oneOf": [
+        { "properties": { "lng": { "type": "null" }, "lat": { "type": "null" } } },
+        { "required": ["lng", "lat"], "properties": { "lng": { "type": "number" }, "lat": { "type": "number" } } }
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "项目名，用于地图标注；PPTX 文件名由组版 profile 的 compose.outputFileName 指定。"
+        },
+        "address": {
+          "type": "string",
+          "description": "地址文字，仅显示用；真实位置以 lng/lat 为准。"
+        },
+        "lng": {
+          "type": ["number", "null"],
+          "minimum": -180,
+          "maximum": 180,
+          "description": "经度。由 coord 声明坐标系。"
+        },
+        "lat": {
+          "type": ["number", "null"],
+          "minimum": -90,
+          "maximum": 90,
+          "description": "纬度。由 coord 声明坐标系。"
+        },
+        "coord": {
+          "type": "string",
+          "enum": ["WGS84", "GCJ02", "GCJ-02"],
+          "description": "lng/lat 的坐标系。页面将 WGS84 转为 GCJ02，GCJ02 和 GCJ-02 直接上图。"
+        }
+      }
+    },
+    "basemap": {
+      "type": "object",
+      "description": "底图。卫星影像来自高德，不需要额外 key。",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["satellite", "vector"],
+          "default": "satellite",
+          "description": "satellite = 高德卫星影像；vector = 高德矢量底图（会显示路名/POI）。页面右上角可临时切换。"
+        },
+        "gray": {
+          "type": "boolean",
+          "default": false,
+          "description": "卫星影像转黑白（灰度 + 轻微提亮对比），让道路等叠加层更突出。对矢量底图无效。"
+        }
+      }
+    },
+    "view": {
+      "type": "object",
+      "description": "视野档位（米）。页面按「短边 44% 覆盖该半径」自动算缩放级别。",
+      "additionalProperties": false,
+      "properties": {
+        "initial": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 500,
+          "description": "打开页面时的视野半径（米）。建议取 options 里的某一项。"
+        },
+        "options": {
+          "type": "array",
+          "description": "视野按钮列表（米），按从小到大写；页面会按这个顺序生成按钮。",
+          "minItems": 1,
+          "items": { "type": "number", "exclusiveMinimum": 0 }
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "description": "页面外框。",
+      "additionalProperties": false,
+      "properties": {
+        "show": {
+          "type": "boolean",
+          "default": true,
+          "description": "false = 默认隐藏左侧栏和图例（打开就是纯净地图），左上角按钮仍可临时调出。"
+        }
+      }
+    },
+    "views": {
+      "type": "object",
+      "description": "实景视点：在正东南西北各挑一条最近的道路做视点，扇形背向基地朝外，四张照片贴在画面上/右/下/左外侧。只在近景（约 500 m 档）显示。",
+      "additionalProperties": false,
+      "properties": {
+        "on": {
+          "type": "boolean",
+          "default": true,
+          "description": "预留字段，当前代码未读取；真正控制扇形显示的是 layers.view.on，控制照片卡片的是视野级别（近景才出现）。"
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 340,
+          "description": "挑路搜索半径（米）。太大容易把远处的主干道选中，太小可能四个方向都找不到路。"
+        },
+        "spread": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90,
+          "default": 45,
+          "description": "与正方向的容许夹角（度）。45 表示只在该方向 ±45° 内找路。"
+        },
+        "halfAngle": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90,
+          "default": 24,
+          "description": "视口扇形的半角（度），24 约等于 48° 视场。"
+        },
+        "coneLen": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 90,
+          "description": "扇形长度（米）。实际绘制会夹在 46~140 px 之间，避免近景过长、远景看不见。"
+        },
+        "captions": {
+          "type": "array",
+          "description": "四条手写说明，顺序为正北/正东/正南/正西；留空字符串则自动用「方向 · 路名」。",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "layers": {
+      "type": "object",
+      "description": "图层样式。只认下面列出的键；每个图层都可以只写想改的字段，其余继承模板 DEF_LAYERS。",
+      "additionalProperties": false,
+      "properties": {
+        "green": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "绿地 / 草地 / 林地面域（OpenFreeMap z14 矢量面，失败才退回高德 z16 栅格色带）。"
+        },
+        "water": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "水面临近（河道、湖、池塘），数据来源同绿地。"
+        },
+        "road": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "道路中心线。width 是 [主干, 次干, 支路] 三档下限（px），实际线宽 = 真实路宽(米) / 当前比例 × 0.4，低于下限时按下限画。v20 起只描一遍本色，没有外描边。"
+        },
+        "metro": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "地铁站（高德 PlaceSearch 150500），点状。"
+        },
+        "bus": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "公交站（高德 PlaceSearch 150700），点状。"
+        },
+        "shop": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "商业 POI（购物中心 / 商场超市），点状。"
+        },
+        "gov": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "行政与公共服务设施（政府机关、医院、学校等），点状。"
+        },
+        "sport": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "体育场馆 / 健身设施，点状。"
+        },
+        "park": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "公园（高德 110101），点状；面域由 green 负责。"
+        },
+        "district": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "区县边界（高德 DistrictSearch），polygon：淡色填充 + 白色轮廓 + 大字标注。"
+        },
+        "express": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "高速 / 高架（OpenFreeMap z11 矢量）。半透明面形态时用 fill，线形态时先描 stroke 再叠 core 作为亮芯，形成深棕底 + 橙色芯的双层线。"
+        },
+        "rail": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "高铁站（50 km 内），点状。"
+        },
+        "air": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "机场（50 km 内），点状。"
+        },
+        "cityName": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "所在区县的大字标注（text，只有 label 生效）。"
+        },
+        "waterName": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "水系名称标注（text，只有 label 生效）。"
+        },
+        "ring": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "15 km 外环参考圈，虚线 line；只在 15 km / 30 km 档显示。"
+        },
+        "view": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "实景视口扇形（fill + stroke）。这里的 on 才是实景视点的总开关。"
+        },
+        "project": {
+          "allOf": [{ "$ref": "#/definitions/layer" }],
+          "description": "项目基地标记（point），label.text 可改红底标签文字。"
+        }
+      }
+    },
+    "express": {
+      "type": "object",
+      "description": "区域高速数据选项。",
+      "properties": {
+        "trunk": { "type": "boolean", "description": "纳入城市快速路。" }
+      }
+    },
+    "ppt": {
+      "type": "object",
+      "description": "PPT 采集配置。pages 以页码为键，含各页视野、图层和样式。",
+      "properties": {
+        "schema": { "type": "integer" },
+        "template_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "pages": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[1-9][0-9]*$": {
+              "type": "object",
+              "properties": {
+                "basemapStyle": { "type": "string", "enum": ["color", "grayscale"], "description": "卫星底图彩色或黑白。省略时继承 basemap.gray。" },
+                "radius": { "type": "number", "exclusiveMinimum": 0 },
+                "enabled": { "type": "array", "items": { "type": "string", "not": { "enum": ["bldg"] } } },
+                "layers": { "type": "object" },
+                "crop": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "number", "minimum": 0 } },
+                "topics": { "type": "object", "additionalProperties": { "type": "object", "additionalProperties": { "type": "string" } } },
+                "redline": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "color": {
+      "type": "string",
+      "description": "颜色：#rgb / #rrggbb / rgb(...) / rgba(...) / 颜色名。透明度优先用同级的 opacity 字段。",
+      "pattern": "^(#[0-9a-fA-F]{3,8}|rgba?\\([^)]*\\)|[a-zA-Z]+)$"
+    },
+    "opacity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "不透明度，0 = 全透明，1 = 不透明。"
+    },
+    "dash": {
+      "description": "线型：solid 实线 / dashed 虚线 / dotted 点线 / [实线段, 空档]（px）。",
+      "oneOf": [
+        { "type": "string", "enum": ["solid", "dashed", "dotted"] },
+        {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number", "minimum": 0 }
+        },
+        { "type": "string", "pattern": "^\\s*[0-9.]+\\s*,\\s*[0-9.]+\\s*$" }
+      ]
+    },
+    "fill": {
+      "type": "object",
+      "description": "填充（polygon 的面 / point 的圆心）。",
+      "additionalProperties": false,
+      "properties": {
+        "color": { "$ref": "#/definitions/color" },
+        "opacity": { "$ref": "#/definitions/opacity" }
+      }
+    },
+    "stroke": {
+      "type": "object",
+      "description": "描边（线的本体 / 面的轮廓 / 点的外圈）。width 为 0 或 opacity 为 0 即不画描边。",
+      "additionalProperties": false,
+      "properties": {
+        "color": { "$ref": "#/definitions/color" },
+        "opacity": { "$ref": "#/definitions/opacity" },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 200,
+          "description": "线宽（px）。line 类图层的宽度也可以写在图层级 width 上。"
+        },
+        "dash": { "$ref": "#/definitions/dash" }
+      }
+    },
+    "label": {
+      "type": "object",
+      "description": "文字标注。show=false 关掉该层全部文字。",
+      "additionalProperties": false,
+      "properties": {
+        "show": { "type": "boolean", "default": true },
+        "color": { "$ref": "#/definitions/color" },
+        "size": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 72,
+          "description": "字号（px）。"
+        },
+        "box": {
+          "allOf": [{ "$ref": "#/definitions/color" }],
+          "description": "文字底衬色，如项目基地默认的红底 rgba(220,38,38,0.95)；不写则不画底。"
+        },
+        "bold": {
+          "type": "boolean",
+          "description": "是否用 600 字重。"
+        },
+        "text": {
+          "type": "string",
+          "description": "固定文字内容（目前只有 layers.project.label.text 用到）。"
+        }
+      }
+    },
+    "layer": {
+      "type": "object",
+      "description": "单个图层的样式。按 style 取用对应字段：polygon 用 fill + stroke；line 用 stroke（宽度默认取 stroke.width，高速是例外，见 width）；point 用 size + fill + stroke；text 只用 label。",
+      "additionalProperties": false,
+      "properties": {
+        "on": {
+          "type": "boolean",
+          "default": true,
+          "description": "默认是否显示（左侧图层面板可随时切换）。"
+        },
+        "style": {
+          "type": "string",
+          "enum": ["polygon", "line", "point", "text"],
+          "description": "绘制方式。"
+        },
+        "width": {
+          "description": "线宽（px）。道路写长度为 3 的数组 = [主干, 次干, 支路] 三档下限（实际线宽 = 真实路宽(米)/当前比例×0.4，低于下限时按下限画）；高速 express 的线形态直接取这里的数字；其余 line 图层用 stroke.width，这里的值不参与绘制。",
+          "oneOf": [
+            { "type": "number", "minimum": 0, "maximum": 200 },
+            {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": { "type": "number", "minimum": 0, "maximum": 200 }
+            }
+          ]
+        },
+        "size": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 200,
+          "description": "点的大小（px，直径；方点为边长）。"
+        },
+        "fill": { "$ref": "#/definitions/fill" },
+        "stroke": { "$ref": "#/definitions/stroke" },
+        "core": {
+          "type": "object",
+          "description": "高速专用：叠在 stroke 之上的亮芯线。width 为 0 则只有单层 stroke。",
+          "additionalProperties": false,
+          "properties": {
+            "color": { "$ref": "#/definitions/color" },
+            "opacity": { "$ref": "#/definitions/opacity" },
+            "width": { "type": "number", "minimum": 0, "maximum": 200 }
+          }
+        },
+        "label": { "$ref": "#/definitions/label" },
+        "way": {
+          "type": "object",
+          "description": "仅 water 图层：河道中心线（OSM waterway）。与水面共用同一个图层、图例和开关，颜色默认继承 fill.color；城区河道在 OSM 里只有线、没有面，关掉这一项河道就会消失。",
+          "additionalProperties": false,
+          "properties": {
+            "on": {
+              "type": "boolean",
+              "default": true,
+              "description": "是否画河道线。"
+            },
+            "color": { "$ref": "#/definitions/color" },
+            "opacity": { "$ref": "#/definitions/opacity" },
+            "widthM": {
+              "type": "object",
+              "description": "没有 OSM width 标签时，按河道等级给的默认宽度（米）。有 width 标签时以标签为准。",
+              "additionalProperties": false,
+              "properties": {
+                "river": { "type": "number", "exclusiveMinimum": 0, "maximum": 200 },
+                "canal": { "type": "number", "exclusiveMinimum": 0, "maximum": 200 },
+                "stream": { "type": "number", "exclusiveMinimum": 0, "maximum": 200 },
+                "ditch": { "type": "number", "exclusiveMinimum": 0, "maximum": 200 },
+                "drain": { "type": "number", "exclusiveMinimum": 0, "maximum": 200 }
+              }
+            },
+            "label": {
+              "allOf": [{ "$ref": "#/definitions/label" }],
+              "description": "河道名（取 OSM waterway 自带的 name，标注在离基地最近的顶点上）。show=false 不标河道名；color / size 留空则继承 layers.water.label。没有名字的河段不会标注。"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

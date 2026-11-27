@@ -1,0 +1,137 @@
+{
+  "template_sha256": "0a0bc682bfc9c29c674c827f83463e0dc72132f0150141b40b55940afc8b68b5",
+  "pages": [
+    {
+      "page": 1,
+      "type": "纯模板",
+      "existing_layers": "完整原页，preserve",
+      "extra_resources": "无",
+      "style_bindings": "style-bindings.json",
+      "action": "preserve"
+    },
+    {
+      "page": 2,
+      "type": "卫星底图",
+      "existing_layers": "区县→district，枢纽→air/rail，基地→project，车程圈→ring",
+      "extra_resources": "若地图数据缺少枢纽，搜索当前机场/火车站资料核实后回填；模板图标复用",
+      "style_bindings": "style-bindings.json",
+      "required_elements": ["district", "air", "rail", "ring", "project"],
+      "title": "区位分析",
+      "layout": "左上标题与正文；左下城市区县位置小图；右侧分析图"
+    },
+    {
+      "page": 3,
+      "type": "卫星底图",
+      "existing_layers": "道路→road/express，枢纽→rail/air，区域→district，交通圈→ring，文字→label",
+      "extra_resources": "模板规划轨道线路需搜索本地已发布线路及规划状态，metro点层不能替代线路",
+      "style_bindings": "style-bindings.json",
+      "required_elements": [
+        "express",
+        "express labels",
+        "rail",
+        "air",
+        "district",
+        "district label",
+        "ring",
+        "ring labels",
+        "legend"
+      ],
+      "title": "区域交通",
+      "layout": "左上标题正文；左下图例；右侧区域交通图"
+    },
+    {
+      "page": 4,
+      "type": "卫星底图",
+      "existing_layers": "商业→shop，公共服务→gov，公园→park/green，距离→ring",
+      "extra_resources": "模板中的具体专题配套若无对应图层则检索当前设施，不沿用旧地名",
+      "style_bindings": "style-bindings.json",
+      "required_elements": [
+        "ring",
+        "ring labels",
+        "parcel",
+        "legend",
+        "verified POIs",
+        "POI index"
+      ],
+      "title": "周边条件",
+      "layout": "左上标题正文；左下图例；右侧配套图"
+    },
+    {
+      "page": 5,
+      "type": "卫星底图",
+      "existing_layers": "道路→road，基地红线→parcel，路名→label",
+      "extra_resources": "必要的规划道路等级/宽度等官方资料",
+      "style_bindings": "style-bindings.json",
+      "required_elements": [
+        "ring",
+        "ring labels",
+        "parcel",
+        "legend",
+        "road",
+        "road labels"
+      ],
+      "title": "基地交通",
+      "layout": "左上标题正文；左下道路图例；右侧道路图"
+    },
+    {
+      "page": 6,
+      "type": "卫星底图",
+      "existing_layers": "水体→water，绿地→green，基地红线→parcel，名称→label",
+      "extra_resources": "待建公园等规划状态须检索核实；缺失主河道为数据覆盖问题",
+      "style_bindings": "style-bindings.json",
+      "required_elements": [
+        "green",
+        "water polygons and waterways",
+        "river labels when named",
+        "parcel",
+        "legend"
+      ],
+      "title": "景观资源",
+      "layout": "左上标题正文；左下图例；右侧景观图"
+    },
+    {
+      "page": 7,
+      "type": "卫星底图",
+      "existing_layers": "卫星底图和近距离基地红线→parcel",
+      "extra_resources": "搜索当前区/县/街道/乡国土空间用地规划图；配准，逐类矢量化轮廓/填色/文字→resource",
+      "style_bindings": "style-bindings.json",
+      "required_elements": ["planning", "residential", "commercial", "urban-green", "park-green", "religious", "flood-control", "legend"],
+      "title": "用地性质",
+      "layout": "左上标题正文；左下分类图例；右侧用地图"
+    },
+    {
+      "page": 8,
+      "type": "卫星底图",
+      "existing_layers": "候选视点→view，基地红线→parcel",
+      "extra_resources": "当前基地周边实景照片，核对位置/方向/时间；照片边框、编号和文字从模板提取",
+      "style_bindings": "style-bindings.json",
+      "title": "基地现状",
+      "layout": "顶部标题；左侧纵列照片与说明；右侧卫星索引图",
+      "required_elements": [
+        "numbered viewpoints",
+        "verified photographs",
+        "direction and date captions"
+      ]
+    },
+    {
+      "page": 9,
+      "type": "红线底图",
+      "existing_layers": "输入图纸解析的边界、尺寸、用地组成、道路/禁开口控制信息、指标及文字",
+      "extra_resources": "输入缺少的适用规划条件需查询或标缺",
+      "style_bindings": "style-bindings.json",
+      "required_elements": ["cad", "parcels", "indicators", "legend"],
+      "title": "规划指标",
+      "layout": "左上标题；左下图例；右侧CAD图；指标置于地块内或近旁"
+    },
+    {
+      "page": 10,
+      "type": "红线底图",
+      "existing_layers": "输入图纸解析的退界、控制线、退距、建筑/道路轮廓及文字",
+      "extra_resources": "输入缺少的适用退界依据需查询或标缺",
+      "style_bindings": "style-bindings.json",
+      "required_elements": ["cad", "parcels", "cadTopics", "legend"],
+      "title": "建筑退界",
+      "layout": "左上标题、依据和规则；左下图例；右侧CAD退界图"
+    }
+  ]
+}
